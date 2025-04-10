@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+static void assert_null(void *value) {
+	if (NULL != value) {
+		fprintf(stderr, "value is expected to be NULL\n");
+		exit(EXIT_FAILURE);
+	}
+}
+
 static void assert_str_equals(char *expected, char *actual) {
 	if (actual == NULL) {
 		fprintf(stderr, "assertiong failed. Expected: \"%s\", actual: NULL.\n", expected);

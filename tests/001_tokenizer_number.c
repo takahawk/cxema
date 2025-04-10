@@ -9,6 +9,9 @@ int main() {
 
 	assert_str_equals("486", token);
 
+	token = t->next(t);
+	assert_null(token);
+
 	free(token);
 	t->release(&t);
 

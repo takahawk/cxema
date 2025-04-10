@@ -11,6 +11,8 @@ static char* next(Tokenizer *self)
 
 static Tokenizer* from_string(char *str) {
 	Tokenizer *tokenizer = malloc(sizeof(*tokenizer));
+
+	*tokenizer = TOKENIZER.prototype;
 	size_t len = strlen(str);
 	tokenizer->str = malloc(len + 1);
 	tokenizer->i = 0;

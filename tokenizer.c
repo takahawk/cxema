@@ -4,15 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline bool one_of(char c, const char *chars) {
-	char c2;
-	for (int i = 0; (c2 = chars[i]) != '\0'; ++i) {
-		if (c == c2)
-			return true;
-	}
+#include "util.h"
 
-	return false;
-}
 
 static char* next(Tokenizer *self) 
 {

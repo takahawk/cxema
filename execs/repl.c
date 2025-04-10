@@ -7,7 +7,7 @@
 int main() {
 	char buffer[4096];
 
-	Cxema *cxema = form_cxema();
+	Cxema *cxema = CXEMA.form();
 	while (1) {
 		printf("cxema> ");
 		if (fgets(buffer, sizeof(buffer), stdin) == NULL) {

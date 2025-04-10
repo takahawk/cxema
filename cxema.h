@@ -11,9 +11,9 @@ struct Cxema {
 
 struct _CxemaStatic {
 	Cxema prototype;
+
+	Cxema* (*form) (void);
 };
 extern const struct _CxemaStatic CXEMA;
-// TODO: custom allocator?
-Cxema *form_cxema();
 
 #endif

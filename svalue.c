@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-SValue* form_svalue_num(long num) {
+static SValue* from_num(long num) {
 	SValue* value = malloc(sizeof(*value));
 
 	value->type = SVAL_TYPE_NUM;
@@ -11,7 +11,12 @@ SValue* form_svalue_num(long num) {
 	return value;
 }
 
-void release_svalue(SValue **svalue) {
+static void release(SValue **svalue) {
 	free(*svalue);
 	*svalue = NULL;
 }
+
+const struct _SValueStatic SVALUE = {
+	.from_num = from_num,
+	.release  = release
+};

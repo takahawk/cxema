@@ -16,7 +16,10 @@ struct SValue {
 	} val;
 };
 
-SValue *form_svalue_num(long num);
-void release_svalue(SValue **svalue);
+struct _SValueStatic {
+	SValue* (*from_num) (long num); 
+	void    (*release)  (SValue **svalue);
+};
+extern const struct _SValueStatic SVALUE;
 
 #endif

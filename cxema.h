@@ -9,7 +9,10 @@ struct Cxema {
 	void    (*release)   (Cxema **pself);
 };
 
-extern const Cxema CXEMA_PROTOTYPE;
+struct _CxemaStatic {
+	Cxema prototype;
+};
+extern const struct _CxemaStatic CXEMA;
 // TODO: custom allocator?
 Cxema *form_cxema();
 

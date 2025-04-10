@@ -6,7 +6,7 @@
 
 static inline bool one_of(char c, const char *chars) {
 	char c2;
-	for (int i = 0; (c = chars[i]) != '\0'; ++i) {
+	for (int i = 0; (c2 = chars[i]) != '\0'; ++i) {
 		if (c == c2)
 			return true;
 	}
@@ -30,6 +30,9 @@ static char* next(Tokenizer *self)
 	while (!((c = str[i]) == '\0' || one_of(c, " \n\t"))) {
 		i++;
 		if (one_of(c, "()")) {
+			// do not include if brace is not separate
+			if (i - start != 1)
+				i--;
 			break;
 		}
 	}

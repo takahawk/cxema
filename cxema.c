@@ -1,6 +1,8 @@
 #include "cxema.h"
 
-static SValue* interpret(char *code) {
+#include <stdlib.h>
+
+static SValue* interpret(Cxema *self, char *code) {
 	// TODO: implement
 	return form_svalue_num(0);
 
@@ -11,7 +13,7 @@ static void release(Cxema **pself) {
 	*pself = NULL;
 }
 
-const Schism CXEMA_PROTOTYPE = {
+const Cxema CXEMA_PROTOTYPE = {
 	.interpret = interpret,
 
 	.release = release
@@ -20,6 +22,7 @@ const Schism CXEMA_PROTOTYPE = {
 // TODO: custom allocator?
 Cxema *form_cxema() {
 	Cxema *cxema = malloc(sizeof(*cxema));
+	*cxema = CXEMA_PROTOTYPE;
 	return cxema;
 }
 

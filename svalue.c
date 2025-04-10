@@ -10,3 +10,8 @@ SValue* form_svalue_num(long num) {
 
 	return value;
 }
+
+void release_svalue(Svalue **svalue) {
+	free(*svalue);
+	*svalue = NULL;
+}

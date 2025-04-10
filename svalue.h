@@ -17,5 +17,6 @@ struct SValue {
 };
 
 SValue *form_svalue_num(long num);
+void release_svalue(Svalue **svalue);
 
 #endif

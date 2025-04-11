@@ -3,7 +3,7 @@
 #include "asserts.h"
 
 int main() {
-	Tokenizer *t = TOKENIZER.from_string("486");
+	Tokenizer *t = TOKENIZER.from_string("   486   ");
 
 	char *token = t->next(t);
 

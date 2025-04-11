@@ -24,7 +24,7 @@ static void assert_type_equals(SValueType expected, SValueType actual) {
 
 static void assert_null(void *value) {
 	if (NULL != value) {
-		fprintf(stderr, "value is expected to be NULL\n");
+		fprintf(stderr, "value is expected to be NULL. String value=\"%s\"\n", (char *) value);
 		exit(EXIT_FAILURE);
 	}
 }

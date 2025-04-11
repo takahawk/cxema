@@ -30,6 +30,9 @@ static char* next(Tokenizer *self)
 		}
 	}
 
+	if (i == start)
+		return NULL;
+
 	char *token = malloc(i - start);
 	strncpy(token, str + start, i - start);
 	token[i-start] = '\0';

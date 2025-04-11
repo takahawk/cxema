@@ -37,11 +37,11 @@ static SValue* parse(Cxema *self, char *code) {
 
 	char *token = t->next(t);
 
-	// if (NULL != token) {
-	// 	SVALUE.release(&result);
-	// 	result = SVALUE.errorf("Unexpected token: \"%s\"", token);
+	if (NULL != token) {
+		SVALUE.release(&result);
+		result = SVALUE.errorf("Unexpected token: \"%s\"", token);
 
-	// }
+	}
 	t->release(&t);
 	return result;
 

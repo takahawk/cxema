@@ -1,5 +1,6 @@
 #ifndef CXEMA_UTIL_H_
 #define CXEMA_UTIL_H_
+#include <stdbool.h>
 static inline bool one_of(char c, const char *chars) 
 {
 	char c2;

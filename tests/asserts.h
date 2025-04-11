@@ -2,6 +2,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "svalue.h"
+
+static void assert_long_equals(long expected, long actual) {
+	if (expected != actual) {
+		fprintf(stderr, "assertion failed. Expected: \"%ld\", actual: \"%ld\".\n", expected, actual);
+		exit(EXIT_FAILURE);
+	}
+
+}
+
+static void assert_type_equals(SValueType expected, SValueType actual) {
+	if (expected != actual) {
+		// TODO: print string types
+		fprintf(stderr, "assertion failed. Expected: \"%d\", actual: \"%d\".\n", expected, actual);
+		exit(EXIT_FAILURE);
+	}
+}
+
 static void assert_null(void *value) {
 	if (NULL != value) {
 		fprintf(stderr, "value is expected to be NULL\n");
@@ -9,13 +27,14 @@ static void assert_null(void *value) {
 	}
 }
 
+
 static void assert_str_equals(char *expected, char *actual) {
 	if (actual == NULL) {
-		fprintf(stderr, "assertiong failed. Expected: \"%s\", actual: NULL.\n", expected);
+		fprintf(stderr, "assertion failed. Expected: \"%s\", actual: NULL.\n", expected);
 		exit(EXIT_FAILURE);
 	}
 	if (strcmp(expected, actual) != 0) {
-		fprintf(stderr, "assertiong failed. Expected: \"%s\", actual: \"%s\".\n", expected, actual);
+		fprintf(stderr, "assertion failed. Expected: \"%s\", actual: \"%s\".\n", expected, actual);
 		exit(EXIT_FAILURE);
 	}
 }

@@ -15,7 +15,9 @@ static void assert_long_equals(long expected, long actual) {
 static void assert_type_equals(SValueType expected, SValueType actual) {
 	if (expected != actual) {
 		// TODO: print string types
-		fprintf(stderr, "assertion failed. Expected: \"%d\", actual: \"%d\".\n", expected, actual);
+		fprintf(stderr, "assertion failed. Expected: \"%s\", actual: \"%s\".\n", 
+			            SVALUE_TYPE.to_string(expected), 
+			            SVALUE_TYPE.to_string(actual));
 		exit(EXIT_FAILURE);
 	}
 }

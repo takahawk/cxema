@@ -20,3 +20,16 @@ const struct _SValueStatic SVALUE = {
 	.from_num = from_num,
 	.release  = release
 };
+
+static char* to_string(SValueType type) {
+	switch (type) {
+	case SVAL_TYPE_NUM:
+		return "Integer";
+	default:
+		return "Unknown";
+	}
+}
+
+const struct _SValueTypeStatic SVALUE_TYPE = {
+	.to_string = to_string
+};

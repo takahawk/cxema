@@ -22,4 +22,9 @@ struct _SValueStatic {
 };
 extern const struct _SValueStatic SVALUE;
 
+struct _SValueTypeStatic {
+	char* (*to_string) (SValueType type);
+};
+extern const struct _SValueTypeStatic SVALUE_TYPE;
+
 #endif

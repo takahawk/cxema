@@ -16,7 +16,8 @@ int main() {
 		}
 
 		SValue *result = cxema->interpret(cxema, buffer);
-		printf("%li\n", result->val.num);
+		char *resstr = SVALUE.to_string(result);
+		printf("%s\n", resstr);
 		SVALUE.release(&result);
 	}
 

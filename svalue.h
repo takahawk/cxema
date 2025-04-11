@@ -6,6 +6,7 @@ typedef enum SValueType SValueType;
 
 enum SValueType {
 	SVAL_TYPE_NUM,
+	SVAL_TYPE_ERR,
 };
 
 
@@ -13,11 +14,15 @@ struct SValue {
 	SValueType type;
 	union {
 		long num;
+		char *err;
 	} val;
 };
 
 struct _SValueStatic {
-	SValue* (*from_num) (long num); 
+	SValue* (*errorf)   (const char *fmt, ...);
+	SValue* (*num) (long num); 
+
+	char*   (*to_string) (SValue *svalue);
 	void    (*release)  (SValue **svalue);
 };
 extern const struct _SValueStatic SVALUE;

@@ -6,13 +6,23 @@
 #include "tokenizer.h"
 #include "util.h"
 
-static SValue* _parse(Cxema *self, Tokenizer *t) {
-
-	char *token;
+static SValue* _parse_sexpr(Cxema *self, Tokenizer *t) {
 	while ((token = t->next(t)) != NULL && strcmp(token, ")") != 0) {
+
+	}
+}
+
+
+static SValue* _parse(Cxema *self, Tokenizer *t) {
+	char *token;
+	SValue* result = NULL;
+
+	token-
+	while ((token = t->next(t)) != NULL && strcmp(token, ")") != 0) {
+		SValue *val;
 		if (strcmp(token, "(") == 0) {
 			// TODO: impl
-			_parse(self, t);
+			_parse_sexpr(self, t);
 		}
 
 		if (is_integer(token)) {
@@ -22,7 +32,14 @@ static SValue* _parse(Cxema *self, Tokenizer *t) {
 			} else if (errno == EINVAL) {
 				return SVALUE.errorf("Invalid number \"%s\"", token);
 			}
-			return SVALUE.num(num);
+
+			val = SVALUE.num(num);
+		}
+
+		if (NULL == result) {
+			result = val;
+		} else {
+
 		}
 
 		

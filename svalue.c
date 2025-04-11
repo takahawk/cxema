@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+static SValue* cons(SValue *)
+
 static SValue* num(long num) {
 	SValue* value = malloc(sizeof(*value));
 

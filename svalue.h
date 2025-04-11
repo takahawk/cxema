@@ -7,20 +7,24 @@ typedef enum SValueType SValueType;
 enum SValueType {
 	SVAL_TYPE_NUM,
 	SVAL_TYPE_ERR,
+	SVAL_TYPE_CONS,
 };
-
 
 struct SValue {
 	SValueType type;
 	union {
 		long num;
 		char *err;
+		struct {
+			SValue *car;
+			Svalue *cdr;
+		} cons;
 	} val;
 };
 
 struct _SValueStatic {
 	SValue* (*errorf)   (const char *fmt, ...);
-	SValue* (*num) (long num); 
+	SValue* (*num)      (long num); 
 
 	char*   (*to_string) (SValue *svalue);
 	void    (*release)  (SValue **svalue);

@@ -7,6 +7,10 @@
 #include "util.h"
 
 
+static char* peek(Tokenizer *self) {
+
+}
+
 static char* next(Tokenizer *self) 
 {
 	if ('\0' == self->str[self->i]) {

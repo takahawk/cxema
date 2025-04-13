@@ -17,17 +17,17 @@ struct SValue {
 		char *err;
 		struct {
 			SValue *car;
-			Svalue *cdr;
+			SValue *cdr;
 		} cons;
 	} val;
 };
 
 struct _SValueStatic {
-	SValue* (*errorf)   (const char *fmt, ...);
-	SValue* (*num)      (long num); 
-
+	SValue* (*errorf)    (const char *fmt, ...);
+	SValue* (*num)       (long num);
+  SValue* (*cons)      (SValue *car, SValue *cdr);
 	char*   (*to_string) (SValue *svalue);
-	void    (*release)  (SValue **svalue);
+	void    (*release)   (SValue **svalue);
 };
 extern const struct _SValueStatic SVALUE;
 

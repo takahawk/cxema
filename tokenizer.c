@@ -7,13 +7,14 @@
 #include "util.h"
 
 
-static char* peek(Tokenizer *self) {
-
+static bool has_next(Tokenizer *self)
+{
+  return '\0' == self->str[self->i];
 }
 
-static char* next(Tokenizer *self) 
+static char* next(Tokenizer *self)
 {
-	if ('\0' == self->str[self->i]) {
+	if (!self->has_next(self)) {
 		return NULL;
 	}
 	char *str = self->str;
@@ -46,7 +47,8 @@ static char* next(Tokenizer *self)
 	return token;
 }
 
-static Tokenizer* from_string(char *str) {
+static Tokenizer* from_string(char *str)
+{
 	Tokenizer *tokenizer = malloc(sizeof(*tokenizer));
 
 	*tokenizer = TOKENIZER.prototype;
@@ -68,6 +70,7 @@ static void release(Tokenizer **pself)
 
 const struct _TokenizerStatic TOKENIZER = {
 	.prototype = {
+    .has_next = has_next,
 		.next = next,
 		.release = release
 	},

@@ -6,59 +6,83 @@
 #include "tokenizer.h"
 #include "util.h"
 
-static SValue* _parse_sexpr(Cxema *self, Tokenizer *t) {
-	while ((token = t->next(t)) != NULL && strcmp(token, ")") != 0) {
+static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t);
+static SValue* _parse_cons(Cxema *self, Tokenizer *t);
 
-	}
+static SValue* _parse_cons(Cxema *self, Tokenizer *t) {
+  SValue *res;
+  char *token = t->next(t);
+  if (NULL == token) {
+    res = SVALUE.errorf("Unexpected end of input");
+    goto end;
+  }
+
+  SValue* car = _parse_value(self, token, t);
+  if (car->type == SVAL_TYPE_ERR) {
+    goto end;
+  }
+  res = SVALUE.cons(car, NULL);
+  SValue* tail = res;
+  while ((token = t->next(t)) != NULL && strcmp(token, ")") != 0) {
+    if (NULL == token) {
+      res = SVALUE.errorf("Unexpected end of input");
+      goto end;
+    }
+
+    car = _parse_value(self, token, t);
+    if (car->type == SVAL_TYPE_ERR) {
+      goto end;
+    }
+    SValue* newtail = SVALUE.cons(car, NULL);
+    tail->val.cons.cdr = newtail;
+    tail = newtail;
+  }
+end:
+  free(token);
+  return res;
 }
 
+static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t) {
+	SValue *res = NULL;
 
-static SValue* _parse(Cxema *self, Tokenizer *t) {
-	char *token;
-	SValue* result = NULL;
-
-	token-
-	while ((token = t->next(t)) != NULL && strcmp(token, ")") != 0) {
-		SValue *val;
-		if (strcmp(token, "(") == 0) {
-			// TODO: impl
-			_parse_sexpr(self, t);
-		}
-
-		if (is_integer(token)) {
+  if (strcmp(token, "(") == 0) {
+    res = _parse_cons(self, t);
+    goto end;
+  }
+  if (is_integer(token)) {
+    while ((token = t->next(t)) != NULL && strcmp(token, ")") != 0) {
 			long num = strtol(token, NULL, 10);
 			if (errno == ERANGE) {
-				return SVALUE.errorf("Value \"%s\" is too big", token);
+				res = SVALUE.errorf("Value \"%s\" is too big", token);
+        goto end;
 			} else if (errno == EINVAL) {
-				return SVALUE.errorf("Invalid number \"%s\"", token);
-			}
-
-			val = SVALUE.num(num);
+				res = SVALUE.errorf("Invalid number \"%s\"", token);
+        goto end;
+			} else {
+        res = SVALUE.num(num);
+        goto end;
+      }
 		}
+  }
 
-		if (NULL == result) {
-			result = val;
-		} else {
+  res = SVALUE.errorf("Undefined token: %s", token);
 
-		}
-
-		
-		// TODO: impl
-		free(token);
-	}
+end:
+  free(token);
+  return res;
 }
 
 static SValue* parse(Cxema *self, char *code) {
 	Tokenizer *t = TOKENIZER.from_string(code);
-	SValue *result = _parse(self, t);
+  SValue *result = NULL;
 
-	char *token = t->next(t);
+  while (t->has_next(t)) {
+    char *token = t->next(t);
+    SValue *result = _parse_value(self, token, t);
+    if (result->type == SVAL_TYPE_ERR)
+      break;
+  }
 
-	if (NULL != token) {
-		SVALUE.release(&result);
-		result = SVALUE.errorf("Unexpected token: \"%s\"", token);
-
-	}
 	t->release(&t);
 	return result;
 

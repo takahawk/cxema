@@ -5,17 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static SValue* cons(SValue *)
-
-static SValue* num(long num) {
-	SValue* value = malloc(sizeof(*value));
-
-	value->type = SVAL_TYPE_NUM;
-	value->val.num = num;
-
-	return value;
-}
-
 static SValue* errorf(const char *fmt, ...) {
 	SValue *sval = malloc(sizeof(*sval));
 	sval->type = SVAL_TYPE_ERR;
@@ -35,6 +24,27 @@ static SValue* errorf(const char *fmt, ...) {
 	return sval;
 }
 
+static SValue* cons(SValue *car, SValue *cdr) {
+  if (NULL == car) {
+    return errorf("Empty cons are disallowed");
+  }
+  SValue *val = malloc(sizeof(*val));
+  val->type = SVAL_TYPE_CONS;
+  val->val.cons.car = car;
+  val->val.cons.cdr = cdr;
+
+  return val;
+}
+
+static SValue* num(long num) {
+	SValue* value = malloc(sizeof(*value));
+
+	value->type = SVAL_TYPE_NUM;
+	value->val.num = num;
+
+	return value;
+}
+
 static char* sval_to_string(SValue *svalue) {
 	// TODO: evaluate length beforehand
 	char *result = malloc(1024);
@@ -46,6 +56,9 @@ static char* sval_to_string(SValue *svalue) {
 	case SVAL_TYPE_ERR:
 		strncpy(result, svalue->val.err, 1023);
 		break;
+  case SVAL_TYPE_CONS:
+    // TODO: impl
+    break;
 	}
 
 	return result;
@@ -70,6 +83,7 @@ const struct _SValueStatic SVALUE = {
 	.to_string = sval_to_string,
 	.errorf    = errorf,
 	.num       = num,
+  .cons      = cons,
 	.release   = release
 };
 
@@ -79,6 +93,8 @@ static char* sval_type_to_string(SValueType type) {
 		return "Integer";
 	case SVAL_TYPE_ERR:
 		return "Error";
+  case SVAL_TYPE_CONS:
+    return "Cons";
 	default:
 		return "Unknown";
 	}

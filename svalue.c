@@ -1,5 +1,6 @@
 #include "svalue.h"
 
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,23 +46,52 @@ static SValue* num(long num) {
 	return value;
 }
 
-static char* sval_to_string(SValue *svalue) {
-	// TODO: evaluate length beforehand
-	char *result = malloc(1024);
 
-	switch (svalue->type) {
-	case SVAL_TYPE_NUM:
-		snprintf(result, 1023, "%ld", svalue->val.num);
-		break;
-	case SVAL_TYPE_ERR:
-		strncpy(result, svalue->val.err, 1023);
-		break;
+static size_t _estimate_str_size(SValue *svalue) {
+  if (NULL == svalue) {
+    return 3; // nil
+  }
+  switch (svalue->type) {
+  case SVAL_TYPE_NUM:
+    return floor(log10(svalue->val.num));
+  case SVAL_TYPE_ERR:
+    return strlen(svalue->val.err);
   case SVAL_TYPE_CONS:
-    // TODO: impl
-    break;
-	}
+    return 1 + // (
+           _estimate_str_size(svalue->val.cons.car) +
+           3 + // dot and spaces
+           _estimate_str_size(svalue->val.cons.cdr) +
+           1; // )
+  }
+}
 
-	return result;
+static int _sval_to_string(SValue *svalue, char *buffer) {
+  if (NULL == svalue) {
+    return sprintf(buffer, "nil");
+  }
+
+  switch (svalue->type) {
+  case SVAL_TYPE_NUM:
+    return sprintf(buffer, "%ld", svalue->val.num);
+  case SVAL_TYPE_ERR:
+    return sprintf(buffer, svalue->val.err);
+  case SVAL_TYPE_CONS:
+    int len = 0;
+    len += sprintf(buffer, "(");
+    len += _sval_to_string(svalue->val.cons.car, buffer + len);
+    len += sprintf(buffer + len, " . ");
+    len += _sval_to_string(svalue->val.cons.cdr, buffer + len);
+    len += sprintf(buffer + len, ")");
+    return len;
+  }
+}
+
+static char* sval_to_string(SValue *svalue) {
+  size_t len = _estimate_str_size(svalue);
+	char *buffer = malloc(len + 1);
+  _sval_to_string(svalue, buffer);
+
+	return buffer;
 }
 
 static void release(SValue **pself) {
@@ -73,6 +103,14 @@ static void release(SValue **pself) {
 		break;
 	case SVAL_TYPE_NUM:
 		break;
+  case SVAL_TYPE_CONS:
+    SValue *car = self->val.cons.car;
+    SValue *cdr = self->val.cons.cdr;
+    if (NULL != car)
+      SVALUE.release(&car);
+    if (NULL != cdr)
+      SVALUE.release(&cdr);
+    break;
 	}
 
 	free(self);

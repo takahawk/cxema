@@ -9,7 +9,8 @@
 
 static bool has_next(Tokenizer *self)
 {
-  return '\0' == self->str[self->i];
+  while (one_of(self->str[self->i], " \n\t")) self->i++;
+  return '\0' != self->str[self->i];
 }
 
 static char* next(Tokenizer *self)

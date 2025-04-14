@@ -10,35 +10,38 @@ static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t);
 static SValue* _parse_cons(Cxema *self, Tokenizer *t);
 
 static SValue* _parse_cons(Cxema *self, Tokenizer *t) {
-  SValue *res;
+  SValue *res = NULL;
   char *token = t->next(t);
   if (NULL == token) {
-    res = SVALUE.errorf("Unexpected end of input");
-    goto end;
+    return SVALUE.errorf("Unexpected end of input");
   }
 
   SValue* car = _parse_value(self, token, t);
   if (car->type == SVAL_TYPE_ERR) {
-    goto end;
+    return car;
   }
   res = SVALUE.cons(car, NULL);
   SValue* tail = res;
   while ((token = t->next(t)) != NULL && strcmp(token, ")") != 0) {
     if (NULL == token) {
-      res = SVALUE.errorf("Unexpected end of input");
-      goto end;
+      SVALUE.release(&res);
+      return SVALUE.errorf("Unexpected end of input");
     }
 
     car = _parse_value(self, token, t);
     if (car->type == SVAL_TYPE_ERR) {
-      goto end;
+      SVALUE.release(&res);
+      return car;
     }
     SValue* newtail = SVALUE.cons(car, NULL);
     tail->val.cons.cdr = newtail;
     tail = newtail;
   }
+  if (NULL == token) {
+    SVALUE.release(&res);
+    return SVALUE.errorf("\")\" expected");
+  }
 end:
-  free(token);
   return res;
 }
 
@@ -48,21 +51,18 @@ static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t) {
   if (strcmp(token, "(") == 0) {
     res = _parse_cons(self, t);
     goto end;
-  }
-  if (is_integer(token)) {
-    while ((token = t->next(t)) != NULL && strcmp(token, ")") != 0) {
-			long num = strtol(token, NULL, 10);
-			if (errno == ERANGE) {
-				res = SVALUE.errorf("Value \"%s\" is too big", token);
-        goto end;
-			} else if (errno == EINVAL) {
-				res = SVALUE.errorf("Invalid number \"%s\"", token);
-        goto end;
-			} else {
-        res = SVALUE.num(num);
-        goto end;
-      }
-		}
+  } else if (is_integer(token)) {
+    long num = strtol(token, NULL, 10);
+    if (errno == ERANGE) {
+      res = SVALUE.errorf("Value \"%s\" is too big", token);
+      goto end;
+    } else if (errno == EINVAL) {
+      res = SVALUE.errorf("Invalid number \"%s\"", token);
+      goto end;
+    } else {
+      res = SVALUE.num(num);
+      goto end;
+    }
   }
 
   res = SVALUE.errorf("Undefined token: %s", token);
@@ -78,7 +78,7 @@ static SValue* parse(Cxema *self, char *code) {
 
   while (t->has_next(t)) {
     char *token = t->next(t);
-    SValue *result = _parse_value(self, token, t);
+    result = _parse_value(self, token, t);
     if (result->type == SVAL_TYPE_ERR)
       break;
   }

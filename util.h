@@ -1,7 +1,8 @@
 #ifndef CXEMA_UTIL_H_
 #define CXEMA_UTIL_H_
 #include <stdbool.h>
-static inline bool one_of(char c, const char *chars) 
+#include <string.h>
+static inline bool one_of(char c, const char *chars)
 {
 	char c2;
 	for (int i = 0; (c2 = chars[i]) != '\0'; ++i) {
@@ -12,7 +13,7 @@ static inline bool one_of(char c, const char *chars)
 	return false;
 }
 
-static inline bool is_integer(const char* token) 
+static inline bool is_integer(const char* token)
 {
 	int i = 0;
 	if (token[i] == '-')
@@ -44,4 +45,22 @@ static inline bool is_decimal(const char* token) {
 
 	return true;
 }
+
+static inline char* cpystr(const char* str) {
+  size_t len = strlen(str);
+  char *copy = malloc(len + 1);
+
+  strcpy(copy, str);
+
+  return copy;
+}
+
+static inline void* cpymem(const void* data, const size_t size)
+{
+  void *copy = malloc(size);
+  memcpy(copy, data, size);
+
+  return cpymem;
+}
+
 #endif

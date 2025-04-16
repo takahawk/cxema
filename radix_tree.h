@@ -9,6 +9,7 @@ struct _RadixTreeNode {
   void      *data;
   RadixTree *next;
   RadixTree *children;
+  RadixTree *parent;
 };
 
 struct RadixTree {

@@ -49,19 +49,20 @@ static SValue* num(long num) {
 
 static size_t _estimate_str_size(SValue *svalue) {
   if (NULL == svalue) {
-    return 3; // nil
+    return 4; // nil
   }
   switch (svalue->type) {
   case SVAL_TYPE_NUM:
-    return floor(log10(svalue->val.num));
+    return floor(log10(svalue->val.num)) + 2;
   case SVAL_TYPE_ERR:
-    return strlen(svalue->val.err);
+    return strlen(svalue->val.err) + 1;
   case SVAL_TYPE_CONS:
     return 1 + // (
            _estimate_str_size(svalue->val.cons.car) +
            3 + // dot and spaces
            _estimate_str_size(svalue->val.cons.cdr) +
-           1; // )
+           1 + // )
+           1; // \0
   }
 }
 

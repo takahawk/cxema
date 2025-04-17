@@ -8,7 +8,15 @@ enum SValueType {
 	SVAL_TYPE_NUM,
 	SVAL_TYPE_ERR,
 	SVAL_TYPE_CONS,
+  SVAL_TYPE_FUNC,
 };
+
+typedef struct {
+  // TODO:  add environment
+  SValue* (*eval) (SValue *args);
+
+  void *ctx;
+} SFunction;
 
 struct SValue {
 	SValueType type;
@@ -19,6 +27,7 @@ struct SValue {
 			SValue *car;
 			SValue *cdr;
 		} cons;
+    SFunction func;
 	} val;
 };
 

@@ -8,7 +8,7 @@ struct Cxema {
 	SValue* (*parse)     (Cxema *self, char *code);
 	SValue* (*eval)      (Cxema *self, SValue *svalue);
 	SValue* (*interpret) (Cxema *self, char *code);
-	
+
 	void    (*release)   (Cxema **pself);
 };
 

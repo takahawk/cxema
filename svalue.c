@@ -6,7 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-static SValue* errorf(const char *fmt, ...) {
+#include "util.h"
+
+static SValue* errorf(const char *fmt, ...)
+{
 	SValue *sval = malloc(sizeof(*sval));
 	sval->type = SVAL_TYPE_ERR;
 
@@ -25,7 +28,17 @@ static SValue* errorf(const char *fmt, ...) {
 	return sval;
 }
 
-static SValue* cons(SValue *car, SValue *cdr) {
+static SValue* symbol(const char *symbol)
+{
+  SValue *sval = malloc(sizeof(*sval));
+  sval->type = SVAL_TYPE_SYMBOL;
+  sval->val.symbol = cpystr(symbol);
+
+  return sval;
+}
+
+static SValue* cons(SValue *car, SValue *cdr)
+{
   if (NULL == car) {
     return errorf("Empty cons are disallowed");
   }
@@ -37,7 +50,8 @@ static SValue* cons(SValue *car, SValue *cdr) {
   return val;
 }
 
-static SValue* num(long num) {
+static SValue* num(long num)
+{
 	SValue* value = malloc(sizeof(*value));
 
 	value->type = SVAL_TYPE_NUM;
@@ -46,8 +60,19 @@ static SValue* num(long num) {
 	return value;
 }
 
+static SValue *func(SValue* (*eval) (Env*, SValue*, void*), void *ctx)
+{
+  SValue *value = malloc(sizeof(*value));
 
-static size_t _estimate_str_size(SValue *svalue) {
+  value->type = SVAL_TYPE_FUNC;
+  value->val.func = (SFunction) {
+    .eval = eval,
+    .ctx  = ctx
+  };
+}
+
+static size_t _estimate_str_size(SValue *svalue)
+{
   if (NULL == svalue) {
     return 4; // nil
   }
@@ -66,7 +91,8 @@ static size_t _estimate_str_size(SValue *svalue) {
   }
 }
 
-static int _sval_to_string(SValue *svalue, char *buffer) {
+static int _sval_to_string(SValue *svalue, char *buffer)
+{
   if (NULL == svalue) {
     return sprintf(buffer, "nil");
   }
@@ -87,7 +113,8 @@ static int _sval_to_string(SValue *svalue, char *buffer) {
   }
 }
 
-static char* sval_to_string(SValue *svalue) {
+static char* sval_to_string(SValue *svalue)
+{
   size_t len = _estimate_str_size(svalue);
 	char *buffer = malloc(len + 1);
   _sval_to_string(svalue, buffer);
@@ -95,13 +122,17 @@ static char* sval_to_string(SValue *svalue) {
 	return buffer;
 }
 
-static void release(SValue **pself) {
+static void release(SValue **pself)
+{
 	SValue *self = *pself;
 
 	switch (self->type) {
 	case SVAL_TYPE_ERR:
 		free(self->val.err);
 		break;
+  case SVAL_TYPE_SYMBOL:
+    free(self->val.symbol);
+    break;
 	case SVAL_TYPE_NUM:
 		break;
   case SVAL_TYPE_CONS:
@@ -112,6 +143,11 @@ static void release(SValue **pself) {
     if (NULL != cdr)
       SVALUE.release(&cdr);
     break;
+  case SVAL_TYPE_FUNC:
+    void *ctx = self->val.func.ctx;
+    if (ctx != NULL)
+      free(ctx);
+    break;
 	}
 
 	free(self);
@@ -119,14 +155,19 @@ static void release(SValue **pself) {
 }
 
 const struct _SValueStatic SVALUE = {
-	.to_string = sval_to_string,
+  .symbol    = symbol,
+  .func      = func,
 	.errorf    = errorf,
 	.num       = num,
   .cons      = cons,
+
+	.to_string = sval_to_string,
+
 	.release   = release
 };
 
-static char* sval_type_to_string(SValueType type) {
+static char* sval_type_to_string(SValueType type)
+{
 	switch (type) {
 	case SVAL_TYPE_NUM:
 		return "Integer";
@@ -134,6 +175,10 @@ static char* sval_type_to_string(SValueType type) {
 		return "Error";
   case SVAL_TYPE_CONS:
     return "Cons";
+  case SVAL_TYPE_SYMBOL:
+    return "Symbol";
+  case SVAL_TYPE_FUNC:
+    return "Function";
 	default:
 		return "Unknown";
 	}
@@ -141,4 +186,13 @@ static char* sval_type_to_string(SValueType type) {
 
 const struct _SValueTypeStatic SVALUE_TYPE = {
 	.to_string = sval_type_to_string
+};
+
+static SValue* apply(SFunction func, Env *env, SValue *svalue)
+{
+  return func.eval(env, svalue, func.ctx);
+}
+
+const struct _SFunctionStatic SFUNCTION = {
+  .apply = apply,
 };

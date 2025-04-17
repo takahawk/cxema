@@ -3,13 +3,16 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include "builtins.h"
+#include "env.h"
 #include "tokenizer.h"
 #include "util.h"
 
 static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t);
 static SValue* _parse_cons(Cxema *self, Tokenizer *t);
 
-static SValue* _parse_cons(Cxema *self, Tokenizer *t) {
+static SValue* _parse_cons(Cxema *self, Tokenizer *t)
+{
   SValue *res = NULL;
   char *token = t->next(t);
   if (NULL == token) {
@@ -45,7 +48,8 @@ end:
   return res;
 }
 
-static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t) {
+static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t)
+{
 	SValue *res = NULL;
 
   if (strcmp(token, "(") == 0) {
@@ -63,6 +67,11 @@ static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t) {
       res = SVALUE.num(num);
       goto end;
     }
+  } else {
+    // parse anything else as symbol
+    // TODO: comments? quotes?
+    res = SVALUE.symbol(token);
+    goto end;
   }
 
   res = SVALUE.errorf("Undefined token: %s", token);
@@ -72,7 +81,8 @@ end:
   return res;
 }
 
-static SValue* parse(Cxema *self, char *code) {
+static SValue* parse(Cxema *self, char *code)
+{
 	Tokenizer *t = TOKENIZER.from_string(code);
   SValue *result = NULL;
 
@@ -88,25 +98,78 @@ static SValue* parse(Cxema *self, char *code) {
 
 }
 
-static SValue* interpret(Cxema *self, char *code) {
-	return parse(self, code);
+static SValue* eval(Cxema *self, SValue *val)
+{
+  switch (val->type) {
+  case SVAL_TYPE_CONS:
+    SValue* res;
+    SValue* car = val->val.cons.car;
+    SValue* cdr = val->val.cons.cdr;
+    // TODO: lambdas?
+    if (car->type != SVAL_TYPE_SYMBOL) {
+      res = SVALUE.errorf("Symbol expected, found \"%s\"",
+                                  SVALUE.to_string(car));
+      goto end;
+    }
 
+    Env *env = self->genv;
+    char *symbol = car->val.symbol;
+    SValue* defined = env->get(env, symbol);
+
+    if (!defined) {
+      res = SVALUE.errorf("Undefined symbol \"%s\"", symbol);
+      goto end;
+    }
+
+    if (defined->type != SVAL_TYPE_FUNC) {
+      res = SVALUE.errorf("%s=%s is not a function", symbol,
+                          SVALUE.to_string(defined));
+      goto end;
+    }
+
+    SValue *arg = cdr;
+    while (arg) {
+      // TODO: check for cons?
+      arg->val.cons.car = self->eval(self, arg->val.cons.car);
+      arg = arg->val.cons.cdr;
+    }
+
+    res = SFUNCTION.apply(defined->val.func, env, cdr);
+  end:
+    SVALUE.release(&val);
+    return res;
+  default:
+    return val;
+  }
 }
 
-static void release(Cxema **pself) {
+static SValue* interpret(Cxema *self, char *code)
+{
+	SValue *val = parse(self, code);
+  return self->eval(self, val);
+}
+
+static void release(Cxema **pself)
+{
 	free(*pself);
 	*pself = NULL;
 }
 
-static Cxema* form() {
+static Cxema* form()
+{
 	Cxema *cxema = malloc(sizeof(*cxema));
 	*cxema = CXEMA.prototype;
+
+  cxema->genv = ENV.form();
+  BUILTIN.define_all(cxema->genv);
+
 	return cxema;
 }
 
 const struct _CxemaStatic CXEMA = {
 	.prototype = {
 		.parse = parse,
+    .eval = eval,
 		.interpret = interpret,
 		.release = release,
 	},

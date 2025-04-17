@@ -1,5 +1,9 @@
 #ifndef SVALUE_H_
 #define SVALUE_H_
+#include <stdbool.h>
+
+struct Env;
+typedef struct Env Env;
 
 typedef struct SValue SValue;
 typedef enum SValueType SValueType;
@@ -9,11 +13,11 @@ enum SValueType {
 	SVAL_TYPE_ERR,
 	SVAL_TYPE_CONS,
   SVAL_TYPE_FUNC,
+  SVAL_TYPE_SYMBOL
 };
 
 typedef struct {
-  // TODO:  add environment
-  SValue* (*eval) (SValue *args);
+  SValue* (*eval) (Env *env, SValue *args, void *ctx);
 
   void *ctx;
 } SFunction;
@@ -28,15 +32,20 @@ struct SValue {
 			SValue *cdr;
 		} cons;
     SFunction func;
+    char *symbol;
 	} val;
 };
 
 struct _SValueStatic {
+  SValue* (*symbol)    (const char *symbol);
+  SValue* (*func)      (SValue* (*eval) (Env*, SValue*, void*), void *ctx);
 	SValue* (*errorf)    (const char *fmt, ...);
 	SValue* (*num)       (long num);
   SValue* (*cons)      (SValue *car, SValue *cdr);
+
 	char*   (*to_string) (SValue *svalue);
-	void    (*release)   (SValue **svalue);
+
+  void    (*release)   (SValue **svalue);
 };
 extern const struct _SValueStatic SVALUE;
 
@@ -44,5 +53,10 @@ struct _SValueTypeStatic {
 	char* (*to_string) (SValueType type);
 };
 extern const struct _SValueTypeStatic SVALUE_TYPE;
+
+struct _SFunctionStatic {
+  SValue* (*apply) (SFunction func, Env *env, SValue *args);
+};
+extern const struct _SFunctionStatic SFUNCTION;
 
 #endif

@@ -2,7 +2,8 @@
 
 #include "asserts.h"
 
-int main() {
+int main()
+{
 	Cxema *cx = CXEMA.form();
 
 	SValue *sval = cx->parse(cx, "486  ");

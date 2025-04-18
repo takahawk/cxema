@@ -89,7 +89,7 @@ static size_t _estimate_str_size(SValue *svalue)
   }
   switch (svalue->type) {
   case SVAL_TYPE_INT:
-    return floor(log10(svalue->val._int)) + 2;
+    return floor(log10(labs(svalue->val._int))) + 2;
   case SVAL_TYPE_FLOAT:
     return sprintf(buffer, "%.10g", svalue->val._float) + 1;
   case SVAL_TYPE_ERR:

@@ -1,6 +1,7 @@
 #ifndef SVALUE_H_
 #define SVALUE_H_
 #include <stdbool.h>
+#include <stdint.h>
 
 struct Env;
 typedef struct Env Env;
@@ -9,7 +10,8 @@ typedef struct SValue SValue;
 typedef enum SValueType SValueType;
 
 enum SValueType {
-	SVAL_TYPE_NUM,
+	SVAL_TYPE_INT,
+  SVAL_TYPE_FLOAT,
 	SVAL_TYPE_ERR,
 	SVAL_TYPE_CONS,
   SVAL_TYPE_FUNC,
@@ -25,7 +27,8 @@ typedef struct {
 struct SValue {
 	SValueType type;
 	union {
-		long num;
+		int64_t _int;
+    double  _float;
 		char *err;
 		struct {
 			SValue *car;
@@ -40,7 +43,8 @@ struct _SValueStatic {
   SValue* (*symbol)    (const char *symbol);
   SValue* (*func)      (SValue* (*eval) (Env*, SValue*, void*), void *ctx);
 	SValue* (*errorf)    (const char *fmt, ...);
-	SValue* (*num)       (long num);
+	SValue* (*_int)      (int64_t _int);
+  SValue* (*_float)    (double _float);
   SValue* (*cons)      (SValue *car, SValue *cdr);
 
 	char*   (*to_string) (SValue *svalue);

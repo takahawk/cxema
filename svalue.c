@@ -50,12 +50,22 @@ static SValue* cons(SValue *car, SValue *cdr)
   return val;
 }
 
-static SValue* num(long num)
+static SValue* _int(int64_t _int)
 {
 	SValue* value = malloc(sizeof(*value));
 
-	value->type = SVAL_TYPE_NUM;
-	value->val.num = num;
+	value->type = SVAL_TYPE_INT;
+	value->val._int = _int;
+
+	return value;
+}
+
+static SValue* _float(double _float)
+{
+	SValue* value = malloc(sizeof(*value));
+
+	value->type = SVAL_TYPE_FLOAT;
+	value->val._float = _float;
 
 	return value;
 }
@@ -73,12 +83,15 @@ static SValue *func(SValue* (*eval) (Env*, SValue*, void*), void *ctx)
 
 static size_t _estimate_str_size(SValue *svalue)
 {
+  char buffer[256];
   if (NULL == svalue) {
     return 4; // nil
   }
   switch (svalue->type) {
-  case SVAL_TYPE_NUM:
-    return floor(log10(svalue->val.num)) + 2;
+  case SVAL_TYPE_INT:
+    return floor(log10(svalue->val._int)) + 2;
+  case SVAL_TYPE_FLOAT:
+    return sprintf(buffer, "%f", svalue->val._float) + 1;
   case SVAL_TYPE_ERR:
     return strlen(svalue->val.err) + 1;
   case SVAL_TYPE_CONS:
@@ -98,8 +111,10 @@ static int _sval_to_string(SValue *svalue, char *buffer)
   }
 
   switch (svalue->type) {
-  case SVAL_TYPE_NUM:
-    return sprintf(buffer, "%ld", svalue->val.num);
+  case SVAL_TYPE_INT:
+    return sprintf(buffer, "%ld", svalue->val._int);
+  case SVAL_TYPE_FLOAT:
+    return sprintf(buffer, "%f", svalue->val._float);
   case SVAL_TYPE_ERR:
     return sprintf(buffer, svalue->val.err);
   case SVAL_TYPE_CONS:
@@ -133,7 +148,8 @@ static void release(SValue **pself)
   case SVAL_TYPE_SYMBOL:
     free(self->val.symbol);
     break;
-	case SVAL_TYPE_NUM:
+	case SVAL_TYPE_INT:
+  case SVAL_TYPE_FLOAT:
 		break;
   case SVAL_TYPE_CONS:
     SValue *car = self->val.cons.car;
@@ -158,7 +174,8 @@ const struct _SValueStatic SVALUE = {
   .symbol    = symbol,
   .func      = func,
 	.errorf    = errorf,
-	.num       = num,
+	._int      = _int,
+  ._float    = _float,
   .cons      = cons,
 
 	.to_string = sval_to_string,
@@ -169,8 +186,10 @@ const struct _SValueStatic SVALUE = {
 static char* sval_type_to_string(SValueType type)
 {
 	switch (type) {
-	case SVAL_TYPE_NUM:
+	case SVAL_TYPE_INT:
 		return "Integer";
+  case SVAL_TYPE_FLOAT:
+    return "Float";
 	case SVAL_TYPE_ERR:
 		return "Error";
   case SVAL_TYPE_CONS:

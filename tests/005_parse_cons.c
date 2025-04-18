@@ -13,29 +13,29 @@ int main() {
   SValue *car = head->val.cons.car;
   SValue *cdr = head->val.cons.cdr;
   assert_type_equals(SVAL_TYPE_CONS, cdr->type);
-  assert_type_equals(SVAL_TYPE_NUM, car->type);
-  assert_long_equals(1, car->val.num);
+  assert_type_equals(SVAL_TYPE_INT, car->type);
+  assert_long_equals(1, car->val._int);
 
   head = cdr;
   car = head->val.cons.car;
   cdr = head->val.cons.cdr;
   assert_type_equals(SVAL_TYPE_CONS, cdr->type);
-  assert_type_equals(SVAL_TYPE_NUM, car->type);
-  assert_long_equals(3, car->val.num);
+  assert_type_equals(SVAL_TYPE_INT, car->type);
+  assert_long_equals(3, car->val._int);
 
   head = cdr;
   car = head->val.cons.car;
   cdr = head->val.cons.cdr;
   assert_type_equals(SVAL_TYPE_CONS, cdr->type);
-  assert_type_equals(SVAL_TYPE_NUM, car->type);
-  assert_long_equals(3, car->val.num);
+  assert_type_equals(SVAL_TYPE_INT, car->type);
+  assert_long_equals(3, car->val._int);
 
   head = cdr;
   car = head->val.cons.car;
   cdr = head->val.cons.cdr;
   assert_null(cdr);
-  assert_type_equals(SVAL_TYPE_NUM, car->type);
-  assert_long_equals(7, car->val.num);
+  assert_type_equals(SVAL_TYPE_INT, car->type);
+  assert_long_equals(7, car->val._int);
 
   char *strval = SVALUE.to_string(sval);
 	assert_str_equals("(1 . (3 . (3 . (7 . nil))))", strval);

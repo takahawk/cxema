@@ -7,8 +7,8 @@
 
 static bool _is_number(SValue *val)
 {
-  // TODO: decimal
-  return val->type == SVAL_TYPE_NUM;
+  return val->type == SVAL_TYPE_INT ||
+         val->type == SVAL_TYPE_FLOAT;
 }
 
 static SValue* _eval_sum(Env *env, SValue *args, void *ctx)
@@ -31,11 +31,11 @@ static SValue* _eval_sum(Env *env, SValue *args, void *ctx)
                            SVALUE_TYPE.to_string(car->type));
     }
 
-    sum += car->val.num;
+    sum += car->val._int;
     args = cdr;
   }
 
-  return SVALUE.num(sum);
+  return SVALUE._int(sum);
 }
 
 static void define_all(Env *env)

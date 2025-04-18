@@ -56,7 +56,7 @@ static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t)
     res = _parse_cons(self, t);
     goto end;
   } else if (is_integer(token)) {
-    long num = strtol(token, NULL, 10);
+    int64_t num = strtol(token, NULL, 10);
     if (errno == ERANGE) {
       res = SVALUE.errorf("Value \"%s\" is too big", token);
       goto end;
@@ -64,7 +64,7 @@ static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t)
       res = SVALUE.errorf("Invalid number \"%s\"", token);
       goto end;
     } else {
-      res = SVALUE.num(num);
+      res = SVALUE._int(num);
       goto end;
     }
   } else {

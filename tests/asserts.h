@@ -14,13 +14,16 @@ static void assert_long_equals(long expected, long actual)
 
 }
 
-static void assert_type_equals(SValueType expected, SValueType actual)
+static void assert_type_equals(SValueType expected_type, SValue* val)
 {
-	if (expected != actual) {
+	if (expected_type != val->type) {
 		// TODO: print string types
-		fprintf(stderr, "assertion failed. Expected: \"%s\", actual: \"%s\".\n", 
-			            SVALUE_TYPE.to_string(expected), 
-			            SVALUE_TYPE.to_string(actual));
+		fprintf(stderr, "assertion failed. Expected: \"%s\", actual: \"%s\".\n",
+			            SVALUE_TYPE.to_string(expected_type),
+			            SVALUE_TYPE.to_string(val->type));
+    if (val->type == SVAL_TYPE_ERR) {
+      fprintf(stderr, "Error is \"%s\"\n", val->val.err);
+    }
 		exit(EXIT_FAILURE);
 	}
 }
@@ -52,7 +55,7 @@ static void assert_interprets_as(Cxema *cx, const char *code,
 {
 	SValue *sval = cx->interpret(cx, code);
   char *str = SVALUE.to_string(sval);
-	assert_type_equals(expected_type, sval->type);
+	assert_type_equals(expected_type, sval);
 	assert_str_equals(expected_str, str);
   free(str);
   SVALUE.release(&sval);

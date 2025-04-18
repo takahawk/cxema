@@ -8,7 +8,7 @@ int main()
 
 	SValue *sval = cx->parse(cx, "486  ");
 
-	assert_type_equals(SVAL_TYPE_INT, sval->type);
+	assert_type_equals(SVAL_TYPE_INT, sval);
 	assert_long_equals(486, sval->val._int);
 
 	cx->release(&cx);

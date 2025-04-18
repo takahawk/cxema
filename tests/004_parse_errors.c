@@ -7,7 +7,7 @@ int main() {
 
 	SValue *sval = cx->parse(cx, "13371337133713371337");
 
-	assert_type_equals(sval->type, SVAL_TYPE_ERR);
+	assert_type_equals(SVAL_TYPE_ERR, sval);
 
 	SVALUE.release(&sval);
 

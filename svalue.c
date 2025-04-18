@@ -91,7 +91,7 @@ static size_t _estimate_str_size(SValue *svalue)
   case SVAL_TYPE_INT:
     return floor(log10(svalue->val._int)) + 2;
   case SVAL_TYPE_FLOAT:
-    return sprintf(buffer, "%f", svalue->val._float) + 1;
+    return sprintf(buffer, "%.10g", svalue->val._float) + 1;
   case SVAL_TYPE_ERR:
     return strlen(svalue->val.err) + 1;
   case SVAL_TYPE_CONS:
@@ -114,7 +114,7 @@ static int _sval_to_string(SValue *svalue, char *buffer)
   case SVAL_TYPE_INT:
     return sprintf(buffer, "%ld", svalue->val._int);
   case SVAL_TYPE_FLOAT:
-    return sprintf(buffer, "%f", svalue->val._float);
+    return sprintf(buffer, "%.10g", svalue->val._float);
   case SVAL_TYPE_ERR:
     return sprintf(buffer, svalue->val.err);
   case SVAL_TYPE_CONS:

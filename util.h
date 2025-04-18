@@ -16,7 +16,7 @@ static inline bool one_of(char c, const char *chars)
 static inline bool is_integer(const char* token)
 {
 	int i = 0;
-	if (token[i] == '-')
+	if (token[i] == '-' && token[1] != '\0')
 		i++;
 	char c;
 	for (; (c = token[i]) != '\0'; ++i)
@@ -26,9 +26,9 @@ static inline bool is_integer(const char* token)
 	return true;
 }
 
-static inline bool is_decimal(const char* token) {
+static inline bool is_float(const char* token) {
 	int i = 0;
-	if (token[i] == '-')
+	if (token[i] == '-' && token[1] != '\0')
 		i++;
 	char c;
 	bool has_dot = false;

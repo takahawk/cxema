@@ -60,13 +60,29 @@ static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t)
     if (errno == ERANGE) {
       res = SVALUE.errorf("Value \"%s\" is too big", token);
       goto end;
-    } else if (errno == EINVAL) {
+    }
+    if (errno == EINVAL) {
+      // should be unreachable
       res = SVALUE.errorf("Invalid number \"%s\"", token);
       goto end;
-    } else {
-      res = SVALUE._int(num);
+    }
+    res = SVALUE._int(num);
+    goto end;
+  } else if (is_float(token)) {
+    char *end;
+    double num = strtod(token, &end);
+    if (errno == ERANGE) {
+      res = SVALUE.errorf("Value \"%s\" is too big", token);
       goto end;
     }
+    if (*end != '\0') {
+      // should be unreachable
+      res = SVALUE.errorf("Invalid number \"%s\"", token);
+      goto end;
+    }
+
+    res = SVALUE._float(num);
+    goto end;
   } else {
     // parse anything else as symbol
     // TODO: comments? quotes?

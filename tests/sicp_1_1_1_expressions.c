@@ -15,7 +15,7 @@ int main() {
   assert_interprets_as(cx, "(+ 21 35 12 7)", SVAL_TYPE_INT, "75", __FILE__, __LINE__);
   assert_interprets_as(cx, "(* 25 4 12)", SVAL_TYPE_INT, "1200", __FILE__, __LINE__);
   assert_interprets_as(cx, "(+ (* 3 5) (- 10 6))", SVAL_TYPE_INT, "19", __FILE__, __LINE__);
-  assert_interprets_as(cx, "(+ (* 3 (+ (* 2 4) (+ 3 5))) (+ (- 10 7) 5))",
+  assert_interprets_as(cx, "(+ (* 3 (+ (* 2 4) (+ 3 5))) (+ (- 10 7) 6))",
                        SVAL_TYPE_INT, "57", __FILE__, __LINE__);
 
 	cx->release(&cx);

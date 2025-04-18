@@ -14,13 +14,15 @@ static void assert_long_equals(long expected, long actual)
 
 }
 
-static void assert_type_equals(SValueType expected_type, SValue* val)
+static void assert_type_equals(SValueType expected_type, SValue* val,
+                               const char *file, int line)
 {
 	if (expected_type != val->type) {
 		// TODO: print string types
-		fprintf(stderr, "assertion failed. Expected: \"%s\", actual: \"%s\".\n",
-			            SVALUE_TYPE.to_string(expected_type),
-			            SVALUE_TYPE.to_string(val->type));
+		fprintf(stderr, "\"%s:%d\" assertion failed. Expected: \"%s\", actual: \"%s\".\n",
+                    file, line,
+                    SVALUE_TYPE.to_string(expected_type),
+			              SVALUE_TYPE.to_string(val->type));
     if (val->type == SVAL_TYPE_ERR) {
       fprintf(stderr, "Error is \"%s\"\n", val->val.err);
     }
@@ -37,26 +39,33 @@ static void assert_null(void *value)
 }
 
 
-static void assert_str_equals(char *expected, char *actual)
+static void assert_str_equals(char *expected, char *actual,
+                              const char *file, int line)
 {
 	if (actual == NULL) {
-		fprintf(stderr, "assertion failed. Expected: \"%s\", actual: NULL.\n", expected);
+		fprintf(stderr, "\"%s:%d\" assertion failed. Expected: \"%s\", actual: NULL.\n",
+                    file, line,
+                    expected);
 		exit(EXIT_FAILURE);
 	}
 	if (strcmp(expected, actual) != 0) {
-		fprintf(stderr, "assertion failed. Expected: \"%s\", actual: \"%s\".\n", expected, actual);
+		fprintf(stderr, "\"%s:%d\" assertion failed. Expected: \"%s\", actual: \"%s\".\n",
+                    file, line,
+                    expected, actual);
 		exit(EXIT_FAILURE);
 	}
 }
 
 static void assert_interprets_as(Cxema *cx, const char *code,
                                  SValueType expected_type,
-                                 const char *expected_str)
+                                 const char *expected_str,
+                                 const char *file,
+                                 int line)
 {
 	SValue *sval = cx->interpret(cx, code);
   char *str = SVALUE.to_string(sval);
-	assert_type_equals(expected_type, sval);
-	assert_str_equals(expected_str, str);
+	assert_type_equals(expected_type, sval, file, line);
+	assert_str_equals(expected_str, str, file, line);
   free(str);
   SVALUE.release(&sval);
 }

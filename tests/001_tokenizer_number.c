@@ -7,7 +7,7 @@ int main() {
 
 	char *token = t->next(t);
 
-	assert_str_equals("486", token);
+	assert_str_equals("486", token, __FILE__, __LINE__);
 
 	token = t->next(t);
 	assert_null(token);

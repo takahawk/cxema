@@ -111,10 +111,52 @@ static SValue* _eval_sub(Env *env, SValue *args, void *ctx)
     : SVALUE._int(ires);
 }
 
+static SValue* _eval_mul(Env *env, SValue *args, void *ctx)
+{
+  if (args && args->type != SVAL_TYPE_CONS) {
+    return SVALUE.errorf("arguments expected to be cons cell. Actual type: %s",
+                         SVALUE_TYPE.to_string(args->type));
+  }
+
+  double fprod = 1.;
+  int64_t iprod = 1;
+  bool is_float = false;
+
+  while (args) {
+    SValue *car = args->val.cons.car;
+    SValue *cdr = args->val.cons.cdr;
+
+    if (!_is_number(car)) {
+      return SVALUE.errorf("invalid number: %s (type=%s)",
+                           SVALUE.to_string(car),
+                           SVALUE_TYPE.to_string(car->type));
+    }
+
+    if (is_float) {
+      fprod *= car->type == SVAL_TYPE_INT
+        ? car->val._int
+        : car->val._float;
+    } else {
+      if (car->type == SVAL_TYPE_FLOAT) {
+        fprod = iprod;
+        is_float = true;
+        continue;
+      }
+      iprod *= car->val._int;
+    }
+    args = cdr;
+  }
+
+  return is_float
+    ? SVALUE._float(fprod)
+    : SVALUE._int(iprod);
+}
+
 static void define_all(Env *env)
 {
   env->set(env, "+", SVALUE.func(_eval_sum, NULL));
   env->set(env, "-", SVALUE.func(_eval_sub, NULL));
+  env->set(env, "*", SVALUE.func(_eval_mul, NULL));
 }
 
 const struct _BuiltinsStatic BUILTIN = {

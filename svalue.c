@@ -88,8 +88,12 @@ static size_t _estimate_str_size(SValue *svalue)
     return 4; // nil
   }
   switch (svalue->type) {
+  case SVAL_TYPE_SYMBOL:
+    return strlen(svalue->val.symbol) + 1;
+  case SVAL_TYPE_FUNC:
+    return strlen("<function>") + 1;
   case SVAL_TYPE_INT:
-    return floor(log10(labs(svalue->val._int))) + 2;
+    return sprintf(buffer, "%ld", svalue->val._int) + 1;
   case SVAL_TYPE_FLOAT:
     return sprintf(buffer, "%.10g", svalue->val._float) + 1;
   case SVAL_TYPE_ERR:
@@ -111,6 +115,10 @@ static int _sval_to_string(SValue *svalue, char *buffer)
   }
 
   switch (svalue->type) {
+  case SVAL_TYPE_SYMBOL:
+    return sprintf(buffer, "%s", svalue->val.symbol);
+  case SVAL_TYPE_FUNC:
+    return sprintf(buffer, "<function>");
   case SVAL_TYPE_INT:
     return sprintf(buffer, "%ld", svalue->val._int);
   case SVAL_TYPE_FLOAT:

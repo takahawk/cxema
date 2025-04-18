@@ -60,32 +60,37 @@ static SValue* _eval_sum(Env *env, SValue *args, void *ctx)
 
 static SValue* _eval_sub(Env *env, SValue *args, void *ctx)
 {
-  if (args && args->type != SVAL_TYPE_CONS) {
+  if (!args) {
+    return SVALUE.errorf("at least one argument is expected for -");
+  }
+  if (args->type != SVAL_TYPE_CONS) {
     return SVALUE.errorf("arguments expected to be cons cell. Actual type: %s",
                          SVALUE_TYPE.to_string(args->type));
   }
 
   SValue *car = args->val.cons.car;
   SValue *cdr = args->val.cons.cdr;
-  if (!car) {
-    return SVALUE.errorf("at least one argument is expected for -");
-  }
-  if (!_is_number(car)) {
-    return SVALUE.errorf("invalid number: %s (type=%s)",
-                         SVALUE.to_string(car),
-                         SVALUE_TYPE.to_string(car->type));
-  }
-  if (!cdr) {
+  bool is_float;
+  double fres;
+  int64_t ires;
+  if (cdr) {
+    // >= 2 args
+    if (!_is_number(car)) {
+      return SVALUE.errorf("invalid number: %s (type=%s)",
+                          SVALUE.to_string(car),
+                          SVALUE_TYPE.to_string(car->type));
+    }
+    is_float = car->type == SVAL_TYPE_FLOAT;
+    fres = is_float ? car->val._float : 0.;
+    ires = is_float ? 0 : car->val._int;
+    args = cdr;
+  } else {
     // single argument
-    return car->type == SVAL_TYPE_INT
-      ? SVALUE._int(-car->val._int)
-      : SVALUE._float(-car->val._float);
+    is_float = false;
+    fres = 0.;
+    ires = 0;
   }
 
-  bool is_float = car->type == SVAL_TYPE_FLOAT;
-  double fres = is_float ? car->val._float : 0.;
-  int64_t ires = is_float ? 0 : car->val._int;
-  args = cdr;
 
   while (args) {
     car = args->val.cons.car;
@@ -160,6 +165,9 @@ static SValue* _eval_mul(Env *env, SValue *args, void *ctx)
 
 static SValue* _eval_div(Env *env, SValue *args, void *ctx)
 {
+  if (!args) {
+    return SVALUE.errorf("at least one argument is expected for /");
+  }
   if (args && args->type != SVAL_TYPE_CONS) {
     return SVALUE.errorf("arguments expected to be cons cell. Actual type: %s",
                          SVALUE_TYPE.to_string(args->type));
@@ -167,9 +175,6 @@ static SValue* _eval_div(Env *env, SValue *args, void *ctx)
 
   SValue *car = args->val.cons.car;
   SValue *cdr = args->val.cons.cdr;
-  if (!car) {
-    return SVALUE.errorf("at least one argument is expected for /");
-  }
 
   bool is_float;
   double fres;
@@ -177,6 +182,12 @@ static SValue* _eval_div(Env *env, SValue *args, void *ctx)
 
   if (cdr) {
     // >= 2 args, start with first number
+    if (!_is_number(car)) {
+      return SVALUE.errorf("invalid number: %s (type=%s)",
+                           SVALUE.to_string(car),
+                           SVALUE_TYPE.to_string(car->type));
+    }
+
     is_float = car->type == SVAL_TYPE_FLOAT;
     fres = is_float ? car->val._float : 1.;
     ires = is_float ? 1 : car->val._int;

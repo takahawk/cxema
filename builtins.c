@@ -18,8 +18,9 @@ static SValue* _eval_sum(Env *env, SValue *args, void *ctx)
                          SVALUE_TYPE.to_string(args->type));
   }
 
-  // TODO: decimal!!
-  long sum = 0;
+  double fsum = 0.;
+  int64_t isum = 0;
+  bool is_float = false;
 
   while (args) {
     SValue *car = args->val.cons.car;
@@ -31,11 +32,24 @@ static SValue* _eval_sum(Env *env, SValue *args, void *ctx)
                            SVALUE_TYPE.to_string(car->type));
     }
 
-    sum += car->val._int;
+    if (is_float) {
+      fsum += car->type == SVAL_TYPE_INT
+        ? car->val._int
+        : car->val._float;
+    } else {
+      if (car->type == SVAL_TYPE_FLOAT) {
+        fsum = isum;
+        is_float = true;
+        continue;
+      }
+      isum += car->val._int;
+    }
     args = cdr;
   }
 
-  return SVALUE._int(sum);
+  return is_float
+    ? SVALUE._float(fsum)
+    : SVALUE._int(isum);
 }
 
 static void define_all(Env *env)

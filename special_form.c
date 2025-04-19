@@ -1,10 +1,32 @@
 #include "special_form.h"
 
+#include <string.h>
+
 #include "cxema.h"
 #include "env.h"
 #include "svalue.h"
 
-SValue* define(Cxema *cx, SValue *args)
+static bool is_special_token(const char *token)
+{
+  return strcmp(token, "define") == 0;
+}
+
+static SValue* from_string(const char *symbol)
+{
+  if (strcmp(symbol, "define") == 0)
+    return SVALUE.special_form(SPECIAL_FORM_DEFINE);
+
+  return SVALUE.errorf("unrecognized special form: \"%s\"", symbol);
+}
+
+static SValue* apply(SValue *sform, Cxema *cx, SValue *args) {
+  if (SPECIAL_FORM_DEFINE == sform->val.special_form)
+    return SPECIAL_FORMS.define(cx, args);
+
+  return SVALUE.errorf("unrecognized special form");
+}
+
+static SValue* define(Cxema *cx, SValue *args)
 {
   if (!args || !args->val.cons.cdr || args->val.cons.cdr->val.cons.cdr) {
     return SVALUE.errorf("exactly two arguments are expected (define)");
@@ -15,7 +37,7 @@ SValue* define(Cxema *cx, SValue *args)
 
   if (SVAL_TYPE_SYMBOL == head->type) {
     // just a symbol - evaluate args beforehand and just store val
-    SValue *sval = cx->eval(cx, body);
+    SValue *sval = cx->eval(cx, cx->genv, body);
     if (SVAL_TYPE_ERR == sval->type) {
       return sval;
     }
@@ -32,4 +54,9 @@ SValue* define(Cxema *cx, SValue *args)
   }
 }
 
-extern const struct _SpecialFormsStatic SPECIAL_FORMS;
+const struct _SpecialFormsStatic SPECIAL_FORMS = {
+  .apply            = apply,
+  .from_string      = from_string,
+  .is_special_token = is_special_token,
+  .define           = define,
+};

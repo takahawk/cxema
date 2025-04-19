@@ -5,6 +5,8 @@
 
 #include "builtins.h"
 #include "env.h"
+#include "svalue.h"
+#include "special_form.h"
 #include "tokenizer.h"
 #include "util.h"
 
@@ -83,6 +85,9 @@ static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t)
 
     res = SVALUE._float(num);
     goto end;
+  } else if (SPECIAL_FORMS.is_special_token(token)) {
+
+
   } else {
     // parse anything else as symbol
     // TODO: comments? quotes?
@@ -114,7 +119,7 @@ static SValue* parse(Cxema *self, char *code)
 
 }
 
-static SValue* eval(Cxema *self, SValue *val)
+static SValue* eval(Cxema *self, Env *env, SValue *val)
 {
   switch (val->type) {
   case SVAL_TYPE_CONS:
@@ -128,7 +133,6 @@ static SValue* eval(Cxema *self, SValue *val)
       goto end;
     }
 
-    Env *env = self->genv;
     char *symbol = car->val.symbol;
     SValue* defined = env->get(env, symbol);
 
@@ -146,7 +150,7 @@ static SValue* eval(Cxema *self, SValue *val)
     SValue *arg = cdr;
     while (arg) {
       // TODO: check for cons?
-      arg->val.cons.car = self->eval(self, arg->val.cons.car);
+      arg->val.cons.car = self->eval(self, self->genv, arg->val.cons.car);
       arg = arg->val.cons.cdr;
     }
 
@@ -162,11 +166,13 @@ static SValue* eval(Cxema *self, SValue *val)
 static SValue* interpret(Cxema *self, char *code)
 {
 	SValue *val = parse(self, code);
-  return self->eval(self, val);
+  return self->eval(self, self->genv, val);
 }
 
 static void release(Cxema **pself)
 {
+  Cxema *self = *pself;
+  self->genv->release(&self->genv);
 	free(*pself);
 	*pself = NULL;
 }

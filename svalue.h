@@ -16,7 +16,8 @@ enum SValueType {
 	SVAL_TYPE_CONS,
   SVAL_TYPE_FUNC,
   SVAL_TYPE_SYMBOL,
-  SVAL_TYPE_SPECIAL_FORM
+  SVAL_TYPE_SPECIAL_FORM,
+  SVAL_TYPE_VOID
 };
 
 typedef enum SpecialForm SpecialForm;
@@ -43,8 +44,11 @@ struct SValue {
     SFunction func;
     char *symbol;
     SpecialForm special_form;
+    struct {} _void;
 	} val;
 };
+
+extern const SValue SVAL_VOID;
 
 struct _SValueStatic {
   SValue* (*symbol)       (const char *symbol);

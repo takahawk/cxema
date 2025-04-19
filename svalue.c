@@ -164,12 +164,16 @@ static void release(SValue **pself)
 	SValue *self = *pself;
 
 	switch (self->type) {
+  case SVAL_TYPE_VOID:
+    *pself = NULL;
+    return;
 	case SVAL_TYPE_ERR:
 		free(self->val.err);
 		break;
   case SVAL_TYPE_SYMBOL:
     free(self->val.symbol);
     break;
+  case SVAL_TYPE_SPECIAL_FORM:
 	case SVAL_TYPE_INT:
   case SVAL_TYPE_FLOAT:
 		break;
@@ -208,6 +212,8 @@ const struct _SValueStatic SVALUE = {
 static char* sval_type_to_string(SValueType type)
 {
 	switch (type) {
+  case SVAL_TYPE_VOID:
+    return "Void";
 	case SVAL_TYPE_INT:
 		return "Integer";
   case SVAL_TYPE_FLOAT:
@@ -226,6 +232,10 @@ static char* sval_type_to_string(SValueType type)
 		return "Unknown";
 	}
 }
+
+const SValue SVAL_VOID = {
+  .type = SVAL_TYPE_VOID,
+};
 
 const struct _SValueTypeStatic SVALUE_TYPE = {
 	.to_string = sval_type_to_string

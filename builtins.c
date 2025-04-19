@@ -233,7 +233,6 @@ static SValue* _eval_div(Env *env, SValue *args, void *ctx)
     : SVALUE._int(ires);
 }
 
-
 static void define_all(Env *env)
 {
   env->set(env, "+", SVALUE.func(_eval_sum, NULL));

@@ -81,6 +81,16 @@ static SValue *func(SValue* (*eval) (Env*, SValue*, void*), void *ctx)
   };
 }
 
+static SValue *special_form(SpecialForm form)
+{
+  SValue *value = malloc(sizeof(*value));
+
+  value->type = SVAL_TYPE_SPECIAL_FORM;
+  value->val.special_form = form;
+
+  return value;
+}
+
 static size_t _estimate_str_size(SValue *svalue)
 {
   char buffer[256];
@@ -88,6 +98,8 @@ static size_t _estimate_str_size(SValue *svalue)
     return 4; // nil
   }
   switch (svalue->type) {
+  case SVAL_TYPE_SPECIAL_FORM:
+    return strlen("<spec_form>") + 1;
   case SVAL_TYPE_SYMBOL:
     return strlen(svalue->val.symbol) + 1;
   case SVAL_TYPE_FUNC:
@@ -115,6 +127,8 @@ static int _sval_to_string(SValue *svalue, char *buffer)
   }
 
   switch (svalue->type) {
+  case SVAL_TYPE_SPECIAL_FORM:
+    return sprintf(buffer, "<spec_form>");
   case SVAL_TYPE_SYMBOL:
     return sprintf(buffer, "%s", svalue->val.symbol);
   case SVAL_TYPE_FUNC:
@@ -206,6 +220,8 @@ static char* sval_type_to_string(SValueType type)
     return "Symbol";
   case SVAL_TYPE_FUNC:
     return "Function";
+  case SVAL_TYPE_SPECIAL_FORM:
+    return "Special Form";
 	default:
 		return "Unknown";
 	}

@@ -7,15 +7,21 @@ struct Env;
 typedef struct Env Env;
 
 typedef struct SValue SValue;
-typedef enum SValueType SValueType;
 
+typedef enum SValueType SValueType;
 enum SValueType {
 	SVAL_TYPE_INT,
   SVAL_TYPE_FLOAT,
 	SVAL_TYPE_ERR,
 	SVAL_TYPE_CONS,
   SVAL_TYPE_FUNC,
-  SVAL_TYPE_SYMBOL
+  SVAL_TYPE_SYMBOL,
+  SVAL_TYPE_SPECIAL_FORM
+};
+
+typedef enum SpecialForm SpecialForm;
+enum SpecialForm {
+  SPECIAL_FORM_DEFINE
 };
 
 typedef struct {
@@ -36,16 +42,18 @@ struct SValue {
 		} cons;
     SFunction func;
     char *symbol;
+    SpecialForm special_form;
 	} val;
 };
 
 struct _SValueStatic {
-  SValue* (*symbol)    (const char *symbol);
-  SValue* (*func)      (SValue* (*eval) (Env*, SValue*, void*), void *ctx);
-	SValue* (*errorf)    (const char *fmt, ...);
-	SValue* (*_int)      (int64_t _int);
-  SValue* (*_float)    (double _float);
-  SValue* (*cons)      (SValue *car, SValue *cdr);
+  SValue* (*symbol)       (const char *symbol);
+  SValue* (*func)         (SValue* (*eval) (Env*, SValue*, void*), void *ctx);
+	SValue* (*errorf)       (const char *fmt, ...);
+	SValue* (*_int)         (int64_t _int);
+  SValue* (*_float)       (double _float);
+  SValue* (*cons)         (SValue *car, SValue *cdr);
+  SValue* (*special_form) (SpecialForm form);
 
 	char*   (*to_string) (SValue *svalue);
 

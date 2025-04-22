@@ -13,7 +13,7 @@ static void set(Env *self, char *symbol, SValue *val)
   Array*/*SValue**/ vals = self->values;
   size_t i;
   for (i = 0; i < ss->len; ++i) {
-    if (strcmp(symbol, ss->get(ss, i)) == 0) {
+    if (strcmp(symbol, *(char **) ss->get(ss, i)) == 0) {
       break;
     }
   }
@@ -31,7 +31,7 @@ static SValue* get(Env *self, char *symbol)
 {
   Array*/*char**/ ss = self->symbols;
   for (int i = 0; i < ss->len; ++i) {
-    if (strcmp(symbol, ss->get(ss, i)) == 0) {
+    if (strcmp(symbol, *(char **) ss->get(ss, i)) == 0) {
       SValue **pval = self->values->get(self->values, i);
       return *pval;
     }

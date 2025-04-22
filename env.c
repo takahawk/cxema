@@ -1,6 +1,7 @@
 #include "env.h"
 
-#include "codex/allocators/allocator.h"
+#include "codex/mem/allocator.h"
+#include "codex/mem/release_cb.h"
 #include "codex/ds/array.h"
 
 #include "svalue.h"
@@ -18,7 +19,8 @@ static void set(Env *self, char *symbol, SValue *val)
   }
 
   if (i == ss->len) {
-    ss->add(ss, cpystr(symbol));
+    symbol = cpystr(symbol);
+    ss->add(ss, &symbol);
     vals->add(vals, NULL);
   }
 
@@ -44,9 +46,9 @@ static Env* form()
 
   *env = ENV.prototype;
   env->symbols = ARRAY.form(&STD_ALLOCATOR, sizeof(char*));
-  env->symbols->item_release = JUST_FREE_IT;
+  env->symbols->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
   env->values = ARRAY.form(&STD_ALLOCATOR, sizeof(SValue*));
-  env->values->item_release = JUST_FREE_IT;
+  env->values->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
 
   return env;
 }

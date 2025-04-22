@@ -85,9 +85,9 @@ static SValue* _parse_value(Cxema *self, char *token, Tokenizer *t)
 
     res = SVALUE._float(num);
     goto end;
-  } else if (SPECIAL_FORMS.is_special_token(token)) {
-
-
+  } else if (SPECIAL_FORMS.is_special_form(token)) {
+    res = SPECIAL_FORMS.from_string(token);
+    goto end;
   } else {
     // parse anything else as symbol
     // TODO: comments? quotes?
@@ -127,6 +127,13 @@ static SValue* eval(Cxema *self, Env *env, SValue *val)
     SValue* car = val->val.cons.car;
     SValue* cdr = val->val.cons.cdr;
     // TODO: lambdas?
+    
+    if (car->type == SVAL_TYPE_SPECIAL_FORM) {
+        res = SPECIAL_FORMS.apply(car, self, cdr);
+        free(val); // freeing cons envelope without contents
+        SVALUE.release(&car);
+        return res;
+    }
     if (car->type != SVAL_TYPE_SYMBOL) {
       res = SVALUE.errorf("Symbol expected, found \"%s\"",
                                   SVALUE.to_string(car));
@@ -156,6 +163,10 @@ static SValue* eval(Cxema *self, Env *env, SValue *val)
 
     res = SFUNCTION.apply(defined->val.func, env, cdr);
   end:
+    SVALUE.release(&val);
+    return res;
+  case SVAL_TYPE_SYMBOL:
+    res = env->get(env, val->val.symbol);
     SVALUE.release(&val);
     return res;
   default:

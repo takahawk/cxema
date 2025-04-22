@@ -32,12 +32,12 @@ static SValue* get(Env *self, char *symbol)
   Array*/*char**/ ss = self->symbols;
   for (int i = 0; i < ss->len; ++i) {
     if (strcmp(symbol, *(char **) ss->get(ss, i)) == 0) {
-      SValue **pval = self->values->get(self->values, i);
-      return *pval;
+      SValue *val = *(SValue **) self->values->get(self->values, i);
+      return SVALUE.copy(val);
     }
   }
 
-  return NULL;
+  return SVALUE.errorf("Unknown symbol: \"%s\"", symbol);
 }
 
 static Env* form()

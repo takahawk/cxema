@@ -7,7 +7,7 @@ typedef struct Cxema Cxema;
 
 struct _SpecialFormsStatic {
   SValue* (*apply)            (SValue *sform, Cxema *cx, SValue *args);
-  bool    (*is_special_token) (const char *token);
+  bool    (*is_special_form)  (const char *token);
   SValue* (*from_string)      (const char *token);
   SValue* (*define)           (Cxema *cx, SValue *args);
 };

@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "special_form.h"
+
 struct Env;
 typedef struct Env Env;
 
@@ -58,6 +60,7 @@ struct _SValueStatic {
   SValue* (*_float)       (double _float);
   SValue* (*cons)         (SValue *car, SValue *cdr);
   SValue* (*special_form) (SpecialForm form);
+  SValue* (*copy)         (SValue *val);
 
 	char*   (*to_string) (SValue *svalue);
 

@@ -91,6 +91,28 @@ static SValue *special_form(SpecialForm form)
   return value;
 }
 
+static SValue *copy(SValue *val)
+{
+  if (!val)
+    return NULL;
+  switch (val->type) {
+    case SVAL_TYPE_CONS:
+      SValue *car = SVALUE.copy(val->val.cons.car);
+      SValue *cdr = SVALUE.copy(val->val.cons.cdr);
+      return SVALUE.cons(car, cdr);
+    case SVAL_TYPE_INT:
+    case SVAL_TYPE_FLOAT:
+      SValue *res = malloc(sizeof(*res));
+      *res = *val;
+      return res;
+    case SVAL_TYPE_FUNC:
+      // TODO:
+      return val;
+    default:
+      return SVALUE.errorf("copy is not implemented for type: %s", SVALUE_TYPE.to_string(val->type));
+  }
+}
+
 static size_t _estimate_str_size(SValue *svalue)
 {
   char buffer[256];
@@ -197,12 +219,14 @@ static void release(SValue **pself)
 }
 
 const struct _SValueStatic SVALUE = {
-  .symbol    = symbol,
-  .func      = func,
-	.errorf    = errorf,
-	._int      = _int,
-  ._float    = _float,
-  .cons      = cons,
+  .symbol       = symbol,
+  .func         = func,
+	.errorf       = errorf,
+	._int         = _int,
+  ._float       = _float,
+  .cons         = cons,
+  .special_form = special_form,
+  .copy         = copy,
 
 	.to_string = sval_to_string,
 

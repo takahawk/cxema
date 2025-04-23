@@ -102,6 +102,10 @@ end:
   return res;
 }
 
+static SValue* eval(Cxema *self, SValue *val) {
+  return EVAL(self->genv, val);
+}
+
 static SValue* parse(Cxema *self, char *code)
 {
 	Tokenizer *t = TOKENIZER.from_string(code);
@@ -119,65 +123,10 @@ static SValue* parse(Cxema *self, char *code)
 
 }
 
-static SValue* eval(Cxema *self, Env *env, SValue *val)
-{
-  switch (val->type) {
-  case SVAL_TYPE_CONS:
-    SValue* res;
-    SValue* car = val->val.cons.car;
-    SValue* cdr = val->val.cons.cdr;
-    // TODO: lambdas?
-    
-    if (car->type == SVAL_TYPE_SPECIAL_FORM) {
-        res = SPECIAL_FORMS.apply(car, self, cdr);
-        free(val); // freeing cons envelope without contents
-        SVALUE.release(&car);
-        return res;
-    }
-    if (car->type != SVAL_TYPE_SYMBOL) {
-      res = SVALUE.errorf("Symbol expected, found \"%s\"",
-                                  SVALUE.to_string(car));
-      goto end;
-    }
-
-    char *symbol = car->val.symbol;
-    SValue* defined = env->get(env, symbol);
-
-    if (!defined) {
-      res = SVALUE.errorf("Undefined symbol \"%s\"", symbol);
-      goto end;
-    }
-
-    if (defined->type != SVAL_TYPE_FUNC) {
-      res = SVALUE.errorf("%s=%s is not a function", symbol,
-                          SVALUE.to_string(defined));
-      goto end;
-    }
-
-    SValue *arg = cdr;
-    while (arg) {
-      // TODO: check for cons?
-      arg->val.cons.car = self->eval(self, self->genv, arg->val.cons.car);
-      arg = arg->val.cons.cdr;
-    }
-
-    res = SFUNCTION.apply(defined->val.func, env, cdr);
-  end:
-    SVALUE.release(&val);
-    return res;
-  case SVAL_TYPE_SYMBOL:
-    res = env->get(env, val->val.symbol);
-    SVALUE.release(&val);
-    return res;
-  default:
-    return val;
-  }
-}
-
 static SValue* interpret(Cxema *self, char *code)
 {
 	SValue *val = parse(self, code);
-  return self->eval(self, self->genv, val);
+  return self->eval(self, val);
 }
 
 static void release(Cxema **pself)

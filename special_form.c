@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "cxema.h"
+#include "evaluator.h"
 #include "env.h"
 #include "svalue.h"
 
@@ -19,14 +19,14 @@ static SValue* from_string(const char *symbol)
   return SVALUE.errorf("unrecognized special form: \"%s\"", symbol);
 }
 
-static SValue* apply(SValue *sform, Cxema *cx, SValue *args) {
+static SValue* apply(SValue *sform, Evaluator eval, Env *env, SValue *args) {
   if (SPECIAL_FORM_DEFINE == sform->val.special_form)
-    return SPECIAL_FORMS.define(cx, args);
+    return SPECIAL_FORMS.define(eval, env, args);
 
   return SVALUE.errorf("unrecognized special form");
 }
 
-static SValue* define(Cxema *cx, SValue *args)
+static SValue* define(Evaluator eval, Env *env, SValue *args)
 {
   if (!args || !args->val.cons.cdr || args->val.cons.cdr->val.cons.cdr) {
     return SVALUE.errorf("exactly two arguments are expected (define)");
@@ -37,13 +37,13 @@ static SValue* define(Cxema *cx, SValue *args)
 
   if (SVAL_TYPE_SYMBOL == head->type) {
     // just a symbol - evaluate args beforehand and just store val
-    SValue *sval = cx->eval(cx, cx->genv, body);
+    SValue *sval = eval(env, body);
     if (SVAL_TYPE_ERR == sval->type) {
       return sval;
     }
-    cx->genv->set(cx->genv,
-                  head->val.symbol,
-                  sval);
+    env->set(env,
+             head->val.symbol,
+             sval);
     return &SVAL_VOID;
   } else if (SVAL_TYPE_CONS == head->type) {
     // cons - define function

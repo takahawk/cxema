@@ -8,6 +8,7 @@ typedef struct SValue SValue;
 typedef struct Env Env;
 
 struct Env {
+  Env *parent;
   // TODO: optimize? radix tree, hashtable, balanced btree whatever
   Array*/*char**/ symbols;
   Array*/*SValue**/ values;

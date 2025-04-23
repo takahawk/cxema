@@ -37,6 +37,9 @@ static SValue* get(Env *self, char *symbol)
     }
   }
 
+  if (self->parent)
+    return self->parent->get(self->parent, symbol);
+
   return SVALUE.errorf("Unknown symbol: \"%s\"", symbol);
 }
 
@@ -65,6 +68,8 @@ static void release(Env **pself)
 
 const struct _EnvStatic ENV = {
   .prototype = {
+    .parent  = NULL,
+
     .set     = set,
     .get     = get,
     .release = release,

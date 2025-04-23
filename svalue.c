@@ -139,6 +139,8 @@ static size_t _estimate_str_size(SValue *svalue)
            _estimate_str_size(svalue->val.cons.cdr) +
            1 + // )
            1; // \0
+  case SVAL_TYPE_VOID:
+    return 5;
   }
 }
 
@@ -169,6 +171,8 @@ static int _sval_to_string(SValue *svalue, char *buffer)
     len += _sval_to_string(svalue->val.cons.cdr, buffer + len);
     len += sprintf(buffer + len, ")");
     return len;
+  case SVAL_TYPE_VOID:
+    return sprintf(buffer, "void");
   }
 }
 

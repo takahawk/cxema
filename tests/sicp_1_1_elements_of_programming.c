@@ -20,17 +20,30 @@ int main() {
                        SVAL_TYPE_INT, "57", __FILE__, __LINE__);
 
   // 1.1.2 Naming and the Environment
-  cx->interpret(cx, "(define size 2)");
+  assert_interprets_as(cx, "(define size 2)", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
   assert_interprets_as(cx, "size", SVAL_TYPE_INT, "2", __FILE__, __LINE__);
   assert_interprets_as(cx, "(* size 5)", SVAL_TYPE_INT, "10", __FILE__, __LINE__);
 
-  cx->interpret(cx, "(define pi 3.14159)");
-  cx->interpret(cx, "(define radius 10)");
+  assert_interprets_as(cx, "(define pi 3.14159)", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(define radius 10)", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
   assert_interprets_as(cx, "(* pi (* radius radius))",
                        SVAL_TYPE_FLOAT, "314.159", __FILE__, __LINE__);
 
   cx->interpret(cx, "(define circumference)");
-	cx->release(&cx);
 
+  // 1.1.3 Evaluating combinations
+  assert_interprets_as(cx, "(* (+ 2 (* 4 6)) (+ 3 5 7))", SVAL_TYPE_INT, "390", __FILE__, __LINE__);
+
+  // 1.1.4 Compound procedures
+  assert_interprets_as(cx, "(define (square x) (* x x))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(square 21)", SVAL_TYPE_INT, "441", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(square (+ 2 5))", SVAL_TYPE_INT, "49", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(square (square 3))", SVAL_TYPE_INT, "81", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(define (sum-of-squares x y) (+ (square x) (square y)))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(define (f a) (sum-of-squares (+ a 1) (* a 2)))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(f 5)", SVAL_TYPE_INT, "136", __FILE__, __LINE__);
+
+
+	cx->release(&cx);
 	return 0;
 }

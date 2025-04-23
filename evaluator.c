@@ -45,7 +45,11 @@ static SValue* eval(Env *env, SValue *val)
       arg = arg->val.cons.cdr;
     }
 
-    res = SFUNCTION.apply(defined->val.func, env, cdr);
+    if (defined->val.func.is_builtin) {
+      res = defined->val.func.f.builtin(cdr);
+    } else {
+      // TODO: implement
+    }
   end:
     SVALUE.release(&val);
     return res;

@@ -70,15 +70,18 @@ static SValue* _float(double _float)
 	return value;
 }
 
-static SValue *func(SValue* (*eval) (Env*, SValue*, void*), void *ctx)
+static SValue* builtin_func(SValue* (*eval) (SValue*))
 {
   SValue *value = malloc(sizeof(*value));
 
   value->type = SVAL_TYPE_FUNC;
   value->val.func = (SFunction) {
-    .eval = eval,
-    .ctx  = ctx
+    .is_builtin = true,
+    .f = {
+      .builtin = eval
+    },
   };
+  return value;
 }
 
 static SValue *special_form(SpecialForm form)
@@ -212,9 +215,9 @@ static void release(SValue **pself)
       SVALUE.release(&cdr);
     break;
   case SVAL_TYPE_FUNC:
-    void *ctx = self->val.func.ctx;
-    if (ctx != NULL)
-      free(ctx);
+    if (!self->val.func.is_builtin) {
+      // TODO: impl
+    }
     break;
 	}
 
@@ -224,7 +227,7 @@ static void release(SValue **pself)
 
 const struct _SValueStatic SVALUE = {
   .symbol       = symbol,
-  .func         = func,
+  .builtin_func = builtin_func,
 	.errorf       = errorf,
 	._int         = _int,
   ._float       = _float,
@@ -269,11 +272,3 @@ const struct _SValueTypeStatic SVALUE_TYPE = {
 	.to_string = sval_type_to_string
 };
 
-static SValue* apply(SFunction func, Env *env, SValue *svalue)
-{
-  return func.eval(env, svalue, func.ctx);
-}
-
-const struct _SFunctionStatic SFUNCTION = {
-  .apply = apply,
-};

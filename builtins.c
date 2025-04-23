@@ -17,7 +17,7 @@ static inline bool _is_zero(SValue *val)
          (val->type == SVAL_TYPE_FLOAT && val->val._float == 0);
 }
 
-static SValue* _eval_sum(Env *env, SValue *args, void *ctx)
+static SValue* _eval_sum(SValue *args)
 {
   if (args && args->type != SVAL_TYPE_CONS) {
     return SVALUE.errorf("arguments expected to be cons cell. Actual type: %s",
@@ -58,7 +58,7 @@ static SValue* _eval_sum(Env *env, SValue *args, void *ctx)
     : SVALUE._int(isum);
 }
 
-static SValue* _eval_sub(Env *env, SValue *args, void *ctx)
+static SValue* _eval_sub(SValue *args)
 {
   if (!args) {
     return SVALUE.errorf("at least one argument is expected for -");
@@ -122,7 +122,7 @@ static SValue* _eval_sub(Env *env, SValue *args, void *ctx)
     : SVALUE._int(ires);
 }
 
-static SValue* _eval_mul(Env *env, SValue *args, void *ctx)
+static SValue* _eval_mul(SValue *args)
 {
   if (args && args->type != SVAL_TYPE_CONS) {
     return SVALUE.errorf("arguments expected to be cons cell. Actual type: %s",
@@ -163,7 +163,7 @@ static SValue* _eval_mul(Env *env, SValue *args, void *ctx)
     : SVALUE._int(iprod);
 }
 
-static SValue* _eval_div(Env *env, SValue *args, void *ctx)
+static SValue* _eval_div(SValue *args)
 {
   if (!args) {
     return SVALUE.errorf("at least one argument is expected for /");
@@ -235,10 +235,10 @@ static SValue* _eval_div(Env *env, SValue *args, void *ctx)
 
 static void define_all(Env *env)
 {
-  env->set(env, "+", SVALUE.func(_eval_sum, NULL));
-  env->set(env, "-", SVALUE.func(_eval_sub, NULL));
-  env->set(env, "*", SVALUE.func(_eval_mul, NULL));
-  env->set(env, "/", SVALUE.func(_eval_div, NULL));
+  env->set(env, "+", SVALUE.builtin_func(_eval_sum));
+  env->set(env, "-", SVALUE.builtin_func(_eval_sub));
+  env->set(env, "*", SVALUE.builtin_func(_eval_mul));
+  env->set(env, "/", SVALUE.builtin_func(_eval_div));
 }
 
 const struct _BuiltinsStatic BUILTIN = {

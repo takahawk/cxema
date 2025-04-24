@@ -24,7 +24,8 @@ enum SValueType {
 
 typedef enum SpecialForm SpecialForm;
 enum SpecialForm {
-  SPECIAL_FORM_DEFINE
+  SPECIAL_FORM_DEFINE,
+  SPECIAL_FORM_LAMBDA,
 };
 
 typedef struct {
@@ -33,8 +34,10 @@ typedef struct {
     SValue* (*builtin) (SValue *val);
 
     struct {
-      // TODO:
-
+      Env *env;
+      // list of symbols
+      SValue *params;
+      SValue *body;
     } scheme;
   } f;
 
@@ -62,12 +65,15 @@ extern const SValue SVAL_VOID;
 struct _SValueStatic {
   SValue* (*symbol)       (const char *symbol);
   SValue* (*builtin_func) (SValue* (*eval) (SValue*));
+  SValue* (*scheme_func)  (Env *env, SValue *params, SValue *body);
 	SValue* (*errorf)       (const char *fmt, ...);
 	SValue* (*_int)         (int64_t _int);
   SValue* (*_float)       (double _float);
   SValue* (*cons)         (SValue *car, SValue *cdr);
   SValue* (*special_form) (SpecialForm form);
   SValue* (*copy)         (SValue *val);
+
+  bool    (*is_symbol)    (SValue *val);
 
 	char*   (*to_string) (SValue *svalue);
 

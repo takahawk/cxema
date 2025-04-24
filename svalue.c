@@ -84,6 +84,25 @@ static SValue* builtin_func(SValue* (*eval) (SValue*))
   return value;
 }
 
+static SValue* scheme_func(Env *env, SValue *params, SValue *body)
+{
+  SValue *value = malloc(sizeof(*value));
+
+  value->type = SVAL_TYPE_FUNC;
+  value->val.func = (SFunction) {
+    .is_builtin = false,
+    .f = {
+      .scheme = {
+        .env = env,
+        .params = params,
+        .body = body,
+      },
+    },
+  };
+
+  return value;
+}
+
 static SValue *special_form(SpecialForm form)
 {
   SValue *value = malloc(sizeof(*value));
@@ -114,6 +133,11 @@ static SValue *copy(SValue *val)
     default:
       return SVALUE.errorf("copy is not implemented for type: %s", SVALUE_TYPE.to_string(val->type));
   }
+}
+
+static bool is_symbol(SValue *val)
+{
+  return val->type == SVAL_TYPE_SYMBOL;
 }
 
 static size_t _estimate_str_size(SValue *svalue)
@@ -228,12 +252,15 @@ static void release(SValue **pself)
 const struct _SValueStatic SVALUE = {
   .symbol       = symbol,
   .builtin_func = builtin_func,
+  .scheme_func  = scheme_func,
 	.errorf       = errorf,
 	._int         = _int,
   ._float       = _float,
   .cons         = cons,
   .special_form = special_form,
   .copy         = copy,
+
+  .is_symbol    = is_symbol,
 
 	.to_string = sval_to_string,
 

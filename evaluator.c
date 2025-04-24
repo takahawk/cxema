@@ -1,7 +1,32 @@
 #include "evaluator.h"
 
+#include "cons.h"
 #include "env.h"
 #include "svalue.h"
+
+static SValue* _eval_scheme_func(SValue *func, SValue *args)
+{
+  Env *env = func->val.func.f.scheme.env;
+  SValue *params = func->val.func.f.scheme.params;
+  SValue *body = func->val.func.f.scheme.body;
+
+  size_t expected_len = CONS.list.len(params);
+  size_t actual_len   = CONS.list.len(args);
+
+  if (expected_len != actual_len) {
+    return SVALUE.errorf("Wrong number of arguments (expected=%d got=%d)",
+                         expected_len,
+                         actual_len);
+  }
+
+  for (;
+       params && args;
+       params = params->val.cons.cdr, args = args->val.cons.cdr) {
+    env->set(env, params->val.cons.car->val.symbol, args->val.cons.car);
+  }
+
+  return EVAL(env, body);
+}
 
 static SValue* eval(Env *env, SValue *val)
 {
@@ -48,7 +73,7 @@ static SValue* eval(Env *env, SValue *val)
     if (defined->val.func.is_builtin) {
       res = defined->val.func.f.builtin(cdr);
     } else {
-      // TODO: implement
+      res = _eval_scheme_func(defined, cdr);
     }
   end:
     SVALUE.release(&val);

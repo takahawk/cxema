@@ -13,6 +13,7 @@ struct _SpecialFormsStatic {
   bool    (*is_special_form)  (const char *token);
   SValue* (*from_string)      (const char *token);
   SValue* (*define)           (Evaluator eval, Env *env, SValue *args);
+  SValue* (*lambda)           (Evaluator eval, Env *env, SValue *args);
 };
 
 extern const struct _SpecialFormsStatic SPECIAL_FORMS;

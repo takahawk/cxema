@@ -22,6 +22,9 @@ static void set(Env *self, char *symbol, SValue *val)
     symbol = cpystr(symbol);
     ss->add(ss, &symbol);
     vals->add(vals, NULL);
+  } else {
+    SValue *prev = *(SValue **) vals->get(vals, i);
+    SVALUE.release(&prev);
   }
 
   vals->set(vals, i, &val);

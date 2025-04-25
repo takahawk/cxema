@@ -7,6 +7,13 @@
 #include "svalue.h"
 #include "util.h"
 
+static void _release_sval(Allocator *a, void **sval)
+{
+  SValue *val = *(SValue **) sval;
+  SVALUE.release(&val);
+  *sval = NULL;
+}
+
 static void set(Env *self, char *symbol, SValue *val)
 {
   Array*/*char**/ ss = self->symbols;
@@ -27,6 +34,7 @@ static void set(Env *self, char *symbol, SValue *val)
     SVALUE.release(&prev);
   }
 
+  val = SVALUE.copy(val);
   vals->set(vals, i, &val);
 }
 
@@ -55,20 +63,15 @@ static Env* form()
   env->symbols->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
   env->values = ARRAY.form(&STD_ALLOCATOR, sizeof(SValue*));
   // TODO: release svalues
-  env->values->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
+  env->values->release_cb = RELEASE_CB.form(&STD_ALLOCATOR, _release_sval);
 
   return env;
 }
 
 static Env* copy(Env *original)
 {
-  Env* env = malloc(sizeof(Env));
 
-  *env = ENV.prototype;
-  env->symbols = ARRAY.form(&STD_ALLOCATOR, sizeof(char*));
-  env->symbols->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
-  env->values = ARRAY.form(&STD_ALLOCATOR, sizeof(SValue*));
-  env->values->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
+  Env* env = form();
 
   Array *symbols = original->symbols;
   Array *values  = original->values;

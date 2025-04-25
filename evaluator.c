@@ -66,6 +66,7 @@ static SValue* eval(Env *env, SValue *val)
         res = car->val.func.f.builtin(cdr);
       } else {
         res = _eval_scheme_func(car, cdr);
+        
       }
       SVALUE.release(&val);
       return res;

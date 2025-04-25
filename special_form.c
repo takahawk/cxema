@@ -52,9 +52,20 @@ static SValue* define(Evaluator eval, Env *env, SValue *args)
              sval);
     return &SVAL_VOID;
   } else if (SVAL_TYPE_CONS == head->type) {
-    // cons - define function
-    // TODO: lambda?
-    return SVALUE.errorf("not implemented");
+    SValue *name = head->val.cons.car;
+    if (SVAL_TYPE_SYMBOL != name->type) {
+      return SVALUE.errorf("expected symbol, got: %s (type=%s)",
+                           SVALUE.to_string(name),
+                           SVALUE_TYPE.to_string(name->type));
+    }
+    args->val.cons.car = args->val.cons.car->val.cons.cdr;
+    SValue *func = SPECIAL_FORMS.lambda(eval, env, args);
+    if (SVAL_TYPE_ERR == func->type) {
+      SVALUE.release(&args);
+      return func;
+    }
+    env->set(env, name->val.symbol, func);
+    return &SVAL_VOID;
   } else {
     return SVALUE.errorf("expected list or symbol");
   }

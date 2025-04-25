@@ -39,7 +39,7 @@ static char* next(Tokenizer *self)
 	if (i == start)
 		return NULL;
 
-	char *token = malloc(i - start);
+	char *token = malloc(i - start + 1);
 	strncpy(token, str + start, i - start);
 	token[i-start] = '\0';
 

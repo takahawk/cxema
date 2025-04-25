@@ -71,6 +71,16 @@ static SValue* _float(double _float)
 	return value;
 }
 
+static SValue* _bool(bool _bool)
+{
+	SValue* value = malloc(sizeof(*value));
+
+	value->type = SVAL_TYPE_BOOL;
+	value->val._bool = _bool;
+
+	return value;
+}
+
 static SValue* builtin_func(SValue* (*eval) (SValue*))
 {
   SValue *value = malloc(sizeof(*value));
@@ -127,6 +137,7 @@ static SValue *copy(SValue *val)
       return SVALUE.cons(car, cdr);
     case SVAL_TYPE_INT:
     case SVAL_TYPE_FLOAT:
+    case SVAL_TYPE_BOOL:
       SValue *res = malloc(sizeof(*res));
       *res = *val;
       return res;
@@ -167,6 +178,8 @@ static size_t _estimate_str_size(SValue *svalue)
     return sprintf(buffer, "%ld", svalue->val._int) + 1;
   case SVAL_TYPE_FLOAT:
     return sprintf(buffer, "%.10g", svalue->val._float) + 1;
+  case SVAL_TYPE_BOOL:
+    return 3; // #t or #f
   case SVAL_TYPE_ERR:
     return strlen(svalue->val.err) + 1;
   case SVAL_TYPE_CONS:
@@ -198,6 +211,8 @@ static int _sval_to_string(SValue *svalue, char *buffer)
     return sprintf(buffer, "%ld", svalue->val._int);
   case SVAL_TYPE_FLOAT:
     return sprintf(buffer, "%.10g", svalue->val._float);
+  case SVAL_TYPE_BOOL:
+    return sprintf(buffer, svalue->val._bool ? "#t" : "#f");
   case SVAL_TYPE_ERR:
     return sprintf(buffer, svalue->val.err);
   case SVAL_TYPE_CONS:
@@ -243,6 +258,7 @@ static void release(SValue **pself)
   case SVAL_TYPE_SPECIAL_FORM:
 	case SVAL_TYPE_INT:
   case SVAL_TYPE_FLOAT:
+  case SVAL_TYPE_BOOL:
 		break;
   case SVAL_TYPE_CONS:
     SValue *car = self->val.cons.car;
@@ -287,6 +303,8 @@ const struct _SValueStatic SVALUE = {
 static char* sval_type_to_string(SValueType type)
 {
 	switch (type) {
+  case SVAL_TYPE_BOOL:
+    return "Bool";
   case SVAL_TYPE_VOID:
     return "Void";
 	case SVAL_TYPE_INT:

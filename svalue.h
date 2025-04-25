@@ -14,6 +14,7 @@ typedef enum SValueType SValueType;
 enum SValueType {
 	SVAL_TYPE_INT,
   SVAL_TYPE_FLOAT,
+  SVAL_TYPE_BOOL,
 	SVAL_TYPE_ERR,
 	SVAL_TYPE_CONS,
   SVAL_TYPE_FUNC,
@@ -48,6 +49,7 @@ struct SValue {
 	union {
 		int64_t _int;
     double  _float;
+    bool    _bool;
 		char *err;
 		struct {
 			SValue *car;
@@ -69,6 +71,7 @@ struct _SValueStatic {
 	SValue* (*errorf)       (const char *fmt, ...);
 	SValue* (*_int)         (int64_t _int);
   SValue* (*_float)       (double _float);
+  SValue* (*_bool)        (bool _bool);
   SValue* (*cons)         (SValue *car, SValue *cdr);
   SValue* (*special_form) (SpecialForm form);
   SValue* (*copy)         (SValue *val);

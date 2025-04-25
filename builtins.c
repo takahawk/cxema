@@ -235,10 +235,10 @@ static SValue* _eval_div(SValue *args)
 
 static void define_all(Env *env)
 {
-  env->set(env, "+", SVALUE.builtin_func(_eval_sum));
-  env->set(env, "-", SVALUE.builtin_func(_eval_sub));
-  env->set(env, "*", SVALUE.builtin_func(_eval_mul));
-  env->set(env, "/", SVALUE.builtin_func(_eval_div));
+  env->setnocopy(env, "+", SVALUE.builtin_func(_eval_sum));
+  env->setnocopy(env, "-", SVALUE.builtin_func(_eval_sub));
+  env->setnocopy(env, "*", SVALUE.builtin_func(_eval_mul));
+  env->setnocopy(env, "/", SVALUE.builtin_func(_eval_div));
 }
 
 const struct _BuiltinsStatic BUILTIN = {

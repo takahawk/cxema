@@ -13,8 +13,9 @@ struct Env {
   Array*/*char**/ symbols;
   Array*/*SValue**/ values;
 
-  void    (*set)     (Env *self, char *symbol, SValue *val);
-  SValue* (*get)     (Env *self, char *symbol);
+  void    (*set)       (Env *self, char *symbol, SValue *val);
+  void    (*setnocopy) (Env *self, char *symbol, SValue *val);
+  SValue* (*get)       (Env *self, char *symbol);
 
   void    (*release) (Env **pself);
 };

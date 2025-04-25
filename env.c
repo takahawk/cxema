@@ -14,8 +14,9 @@ static void _release_sval(Allocator *a, void **sval)
   *sval = NULL;
 }
 
-static void set(Env *self, char *symbol, SValue *val)
+static void setnocopy(Env *self, char *symbol, SValue *val)
 {
+
   Array*/*char**/ ss = self->symbols;
   Array*/*SValue**/ vals = self->values;
   size_t i;
@@ -34,8 +35,13 @@ static void set(Env *self, char *symbol, SValue *val)
     SVALUE.release(&prev);
   }
 
-  val = SVALUE.copy(val);
   vals->set(vals, i, &val);
+}
+
+static void set(Env *self, char *symbol, SValue *val)
+{
+  val = SVALUE.copy(val);
+  setnocopy(self, symbol, val);
 }
 
 static SValue* get(Env *self, char *symbol)
@@ -101,9 +107,10 @@ const struct _EnvStatic ENV = {
   .prototype = {
     .parent  = NULL,
 
-    .set     = set,
-    .get     = get,
-    .release = release,
+    .set       = set,
+    .setnocopy = setnocopy,
+    .get       = get,
+    .release   = release,
   },
 
   .form = form,

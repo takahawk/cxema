@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "env.h"
 #include "util.h"
 
 static SValue* errorf(const char *fmt, ...)
@@ -118,6 +119,8 @@ static SValue *copy(SValue *val)
   if (!val)
     return NULL;
   switch (val->type) {
+    case SVAL_TYPE_SYMBOL:
+      return SVALUE.symbol(val->val.symbol);
     case SVAL_TYPE_CONS:
       SValue *car = SVALUE.copy(val->val.cons.car);
       SValue *cdr = SVALUE.copy(val->val.cons.cdr);
@@ -128,8 +131,15 @@ static SValue *copy(SValue *val)
       *res = *val;
       return res;
     case SVAL_TYPE_FUNC:
-      // TODO:
-      return val;
+      if (val->val.func.is_builtin) {
+        return SVALUE.builtin_func(val->val.func.f.builtin);
+      } else {
+        Env    *env    = ENV.copy(val->val.func.f.scheme.env);
+        SValue *params = SVALUE.copy(val->val.func.f.scheme.params);
+        SValue *body   = SVALUE.copy(val->val.func.f.scheme.body);
+
+        return SVALUE.scheme_func(env, params, body);
+      }
     default:
       return SVALUE.errorf("copy is not implemented for type: %s", SVALUE_TYPE.to_string(val->type));
   }
@@ -215,6 +225,10 @@ static char* sval_to_string(SValue *svalue)
 static void release(SValue **pself)
 {
 	SValue *self = *pself;
+  if (!self) {
+    *pself = NULL;
+    return;
+  }
 
 	switch (self->type) {
   case SVAL_TYPE_VOID:
@@ -240,7 +254,10 @@ static void release(SValue **pself)
     break;
   case SVAL_TYPE_FUNC:
     if (!self->val.func.is_builtin) {
-      // TODO: impl
+        SVALUE.release(&self->val.func.f.scheme.body);
+        SVALUE.release(&self->val.func.f.scheme.params);
+        Env *env = self->val.func.f.scheme.env;
+        env->release(&env);
     }
     break;
 	}

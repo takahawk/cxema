@@ -54,7 +54,32 @@ static Env* form()
   env->symbols = ARRAY.form(&STD_ALLOCATOR, sizeof(char*));
   env->symbols->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
   env->values = ARRAY.form(&STD_ALLOCATOR, sizeof(SValue*));
+  // TODO: release svalues
   env->values->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
+
+  return env;
+}
+
+static Env* copy(Env *original)
+{
+  Env* env = malloc(sizeof(Env));
+
+  *env = ENV.prototype;
+  env->symbols = ARRAY.form(&STD_ALLOCATOR, sizeof(char*));
+  env->symbols->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
+  env->values = ARRAY.form(&STD_ALLOCATOR, sizeof(SValue*));
+  env->values->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
+
+  Array *symbols = original->symbols;
+  Array *values  = original->values;
+
+  for (int i = 0; i < original->symbols->len; ++i) {
+    char* symbol = *(char **) symbols->get(symbols, i);
+    SValue* value = *(SValue **) values->get(values, i);
+
+    set(env, symbol, value);
+  }
+  env->parent = original->parent;
 
   return env;
 }
@@ -78,5 +103,6 @@ const struct _EnvStatic ENV = {
     .release = release,
   },
 
-  .form = form
+  .form = form,
+  .copy = copy,
 };

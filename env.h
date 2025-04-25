@@ -23,6 +23,7 @@ struct _EnvStatic {
   Env  prototype;
 
   Env* (*form) (void);
+  Env* (*copy) (Env *original);
 };
 
 extern const struct _EnvStatic ENV;

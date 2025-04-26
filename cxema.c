@@ -1,7 +1,6 @@
 #include "cxema.h"
 
 #include <stdlib.h>
-#include <errno.h>
 
 #include "builtins.h"
 #include "env.h"

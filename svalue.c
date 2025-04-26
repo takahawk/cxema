@@ -29,6 +29,14 @@ static SValue* errorf(const char *fmt, ...)
 	return sval;
 }
 
+static SValue* typeerr(SValue *val, SValueType expected)
+{
+  return errorf("%s expected. Got %s (actual type=%s)",
+                SVALUE_TYPE.to_string(expected),
+                SVALUE.to_string(val),
+                SVALUE_TYPE.to_string(val->type));
+}
+
 static SValue* symbol(const char *symbol)
 {
   SValue *sval = malloc(sizeof(*sval));
@@ -159,6 +167,12 @@ static SValue *copy(SValue *val)
 static bool is_symbol(SValue *val)
 {
   return val->type == SVAL_TYPE_SYMBOL;
+}
+
+static bool is_number(SValue *val)
+{
+  return val->type == SVAL_TYPE_INT ||
+         val->type == SVAL_TYPE_FLOAT;
 }
 
 static size_t _estimate_str_size(SValue *svalue)
@@ -295,6 +309,7 @@ const struct _SValueStatic SVALUE = {
   .copy         = copy,
 
   .is_symbol    = is_symbol,
+  .is_number    = is_number,
 
 	.to_string = sval_to_string,
 
@@ -322,6 +337,8 @@ static char* sval_type_to_string(SValueType type)
     return "Function";
   case SVAL_TYPE_SPECIAL_FORM:
     return "Special Form";
+  case SVAL_TYPE_NUMBER:
+    return "Number";
 	default:
 		return "Unknown";
 	}

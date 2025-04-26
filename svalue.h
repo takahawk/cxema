@@ -20,7 +20,10 @@ enum SValueType {
   SVAL_TYPE_FUNC,
   SVAL_TYPE_SYMBOL,
   SVAL_TYPE_SPECIAL_FORM,
-  SVAL_TYPE_VOID
+  SVAL_TYPE_VOID,
+
+  // quasitype - used internally only
+  SVAL_TYPE_NUMBER
 };
 
 typedef enum SpecialForm SpecialForm;
@@ -68,15 +71,17 @@ struct _SValueStatic {
   SValue* (*symbol)       (const char *symbol);
   SValue* (*builtin_func) (SValue* (*eval) (SValue*));
   SValue* (*scheme_func)  (Env *env, SValue *params, SValue *body);
-	SValue* (*errorf)       (const char *fmt, ...);
 	SValue* (*_int)         (int64_t _int);
   SValue* (*_float)       (double _float);
   SValue* (*_bool)        (bool _bool);
   SValue* (*cons)         (SValue *car, SValue *cdr);
   SValue* (*special_form) (SpecialForm form);
   SValue* (*copy)         (SValue *val);
+	SValue* (*errorf)       (const char *fmt, ...);
+  SValue* (*typeerr)      (SValue *val, SValueType expected);
 
   bool    (*is_symbol)    (SValue *val);
+  bool    (*is_number)    (SValue *val);
 
 	char*   (*to_string) (SValue *svalue);
 

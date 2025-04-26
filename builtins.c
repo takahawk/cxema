@@ -2,14 +2,9 @@
 
 #include <stdbool.h>
 
+#include "cons.h"
 #include "env.h"
 #include "svalue.h"
-
-static inline bool _is_number(SValue *val)
-{
-  return val->type == SVAL_TYPE_INT ||
-         val->type == SVAL_TYPE_FLOAT;
-}
 
 static inline bool _is_zero(SValue *val)
 {
@@ -32,7 +27,7 @@ static SValue* _eval_sum(SValue *args)
     SValue *car = args->val.cons.car;
     SValue *cdr = args->val.cons.cdr;
 
-    if (!_is_number(car)) {
+    if (!SVALUE.is_number(car)) {
       return SVALUE.errorf("invalid number: %s (type=%s)",
                            SVALUE.to_string(car),
                            SVALUE_TYPE.to_string(car->type));
@@ -75,7 +70,7 @@ static SValue* _eval_sub(SValue *args)
   int64_t ires;
   if (cdr) {
     // >= 2 args
-    if (!_is_number(car)) {
+    if (!SVALUE.is_number(car)) {
       return SVALUE.errorf("invalid number: %s (type=%s)",
                           SVALUE.to_string(car),
                           SVALUE_TYPE.to_string(car->type));
@@ -96,7 +91,7 @@ static SValue* _eval_sub(SValue *args)
     car = args->val.cons.car;
     cdr = args->val.cons.cdr;
 
-    if (!_is_number(car)) {
+    if (!SVALUE.is_number(car)) {
       return SVALUE.errorf("invalid number: %s (type=%s)",
                            SVALUE.to_string(car),
                            SVALUE_TYPE.to_string(car->type));
@@ -137,7 +132,7 @@ static SValue* _eval_mul(SValue *args)
     SValue *car = args->val.cons.car;
     SValue *cdr = args->val.cons.cdr;
 
-    if (!_is_number(car)) {
+    if (!SVALUE.is_number(car)) {
       return SVALUE.errorf("invalid number: %s (type=%s)",
                            SVALUE.to_string(car),
                            SVALUE_TYPE.to_string(car->type));
@@ -182,7 +177,7 @@ static SValue* _eval_div(SValue *args)
 
   if (cdr) {
     // >= 2 args, start with first number
-    if (!_is_number(car)) {
+    if (!SVALUE.is_number(car)) {
       return SVALUE.errorf("invalid number: %s (type=%s)",
                            SVALUE.to_string(car),
                            SVALUE_TYPE.to_string(car->type));
@@ -203,7 +198,7 @@ static SValue* _eval_div(SValue *args)
     car = args->val.cons.car;
     cdr = args->val.cons.cdr;
 
-    if (!_is_number(car)) {
+    if (!SVALUE.is_number(car)) {
       return SVALUE.errorf("invalid number: %s (type=%s)",
                            SVALUE.to_string(car),
                            SVALUE_TYPE.to_string(car->type));
@@ -233,12 +228,76 @@ static SValue* _eval_div(SValue *args)
     : SVALUE._int(ires);
 }
 
+static SValue* _cmp_oper(SValue *args, 
+                         bool (*cmp_int)   (int64_t a, int64_t b),
+                         bool (*cmp_float) (double a, double b))
+{
+  if (CONS.list.len(args) < 2) {
+    return SVALUE._bool(true);
+  }
+
+  while (args->val.cons.cdr) {
+    SValue *cdr = args->val.cons.cdr;
+    SValue *a = args->val.cons.car;
+    SValue *b = cdr->val.cons.car;
+
+    if (!SVALUE.is_number(a)) {
+      return SVALUE.typeerr(a, SVAL_TYPE_NUMBER);
+    }
+    if (!SVALUE.is_number(b)) {
+      return SVALUE.typeerr(b, SVAL_TYPE_NUMBER);
+    }
+
+    if (a->type == SVAL_TYPE_INT && b->type == SVAL_TYPE_INT) {
+      if (!cmp_int(a->val._int, b->val._int))
+        return SVALUE._bool(false);
+    } else {
+      double aval = a->type == SVAL_TYPE_INT ? a->val._int : a->val._float;
+      double bval = b->type == SVAL_TYPE_INT ? b->val._int : b->val._float;
+      if (!cmp_float(aval, bval))
+        return SVALUE._bool(false);
+    }
+
+    args = cdr;
+  }
+
+  return SVALUE._bool(true);
+}
+
+static bool _eq_int(int64_t a, int64_t b) { return a == b; }
+static bool _eq_float(double a, double b) { return a == b; }
+static SValue* _eval_eq(SValue* args) { return _cmp_oper(args, _eq_int, _eq_float); }
+
+static bool _gt_int(int64_t a, int64_t b) { return a > b; }
+static bool _gt_float(double a, double b) { return a > b; }
+static SValue* _eval_gt(SValue* args) { return _cmp_oper(args, _gt_int, _gt_float); }
+
+
+static bool _ge_int(int64_t a, int64_t b) { return a >= b; }
+static bool _ge_float(double a, double b) { return a >= b; }
+static SValue* _eval_ge(SValue* args) { return _cmp_oper(args, _ge_int, _ge_float); }
+
+static bool _lt_int(int64_t a, int64_t b) { return a < b; }
+static bool _lt_float(double a, double b) { return a < b; }
+static SValue* _eval_lt(SValue* args) { return _cmp_oper(args, _lt_int, _lt_float); }
+
+
+static bool _le_int(int64_t a, int64_t b) { return a <= b; }
+static bool _le_float(double a, double b) { return a <= b; }
+static SValue* _eval_le(SValue* args) { return _cmp_oper(args, _le_int, _le_float); }
+
 static void define_all(Env *env)
 {
   env->setnocopy(env, "+", SVALUE.builtin_func(_eval_sum));
   env->setnocopy(env, "-", SVALUE.builtin_func(_eval_sub));
   env->setnocopy(env, "*", SVALUE.builtin_func(_eval_mul));
   env->setnocopy(env, "/", SVALUE.builtin_func(_eval_div));
+
+  env->setnocopy(env, "=", SVALUE.builtin_func(_eval_eq));
+  env->setnocopy(env, ">", SVALUE.builtin_func(_eval_gt));
+  env->setnocopy(env, "<", SVALUE.builtin_func(_eval_lt));
+  env->setnocopy(env, ">=", SVALUE.builtin_func(_eval_ge));
+  env->setnocopy(env, "<=", SVALUE.builtin_func(_eval_le));
 }
 
 const struct _BuiltinsStatic BUILTIN = {

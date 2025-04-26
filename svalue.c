@@ -289,6 +289,7 @@ const struct _SValueStatic SVALUE = {
 	.errorf       = errorf,
 	._int         = _int,
   ._float       = _float,
+  ._bool        = _bool,
   .cons         = cons,
   .special_form = special_form,
   .copy         = copy,

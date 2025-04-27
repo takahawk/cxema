@@ -43,7 +43,36 @@ int main() {
   assert_interprets_as(cx, "(define (f a) (sum-of-squares (+ a 1) (* a 2)))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
   assert_interprets_as(cx, "(f 5)", SVAL_TYPE_INT, "136", __FILE__, __LINE__);
 
+  // 1.1.6 Conditional Expressions and Predicates
+  assert_interprets_as(cx, "(define (abs x)\n" 
+                           "  (cond ((> x 0) x)\n"
+                           "        ((= x 0) 0)\n"
+                           "        ((< x 0) (- x))))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
 
+  assert_interprets_as(cx, "(abs 1337)", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(abs (-1337))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(define (abs x)\n" 
+                           "  (cond ((< x 0) (- x))\n"
+                           "        (else x)))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(abs 1337)", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(abs (-1337))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+
+  assert_interprets_as(cx, "(define (abs x)\n" 
+                           "  (if (< x 0)\n"
+                           "      (- x)\n"
+                           "      x))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(abs 1337)", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(abs (-1337))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+
+  assert_interprets_as(cx, "(define x 7)", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(and (> x 5) (< x 10))", SVAL_TYPE_INT, "#t", __FILE__, __LINE__);
+
+  assert_interprets_as(cx, "(define (>= x y) (or (> x y) (= x y)))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(>= 1337 1337)", SVAL_TYPE_BOOL, "#t", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(>= 0111 1337)", SVAL_TYPE_BOOL, "#f", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(>= 1337 0111)", SVAL_TYPE_BOOL, "#t", __FILE__, __LINE__);
+
+  assert_interprets_as(cx, "(define (>= x y) (not (< x y)))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
 	cx->release(&cx);
 	return 0;
 }

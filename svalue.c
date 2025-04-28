@@ -149,6 +149,8 @@ static SValue *copy(SValue *val)
       SValue *res = malloc(sizeof(*res));
       *res = *val;
       return res;
+    case SVAL_TYPE_SPECIAL_FORM:
+      return SVALUE.special_form(val->val.special_form);
     case SVAL_TYPE_FUNC:
       if (val->val.func.is_builtin) {
         return SVALUE.builtin_func(val->val.func.f.builtin);
@@ -164,6 +166,17 @@ static SValue *copy(SValue *val)
   }
 }
 
+static bool is_false(SValue *val)
+{
+  return val->type == SVAL_TYPE_BOOL &&
+         val->val._bool == false;
+}
+
+static bool is_err(SValue *val)
+{
+  return val->type == SVAL_TYPE_ERR;
+}
+
 static bool is_symbol(SValue *val)
 {
   return val->type == SVAL_TYPE_SYMBOL;
@@ -173,6 +186,11 @@ static bool is_number(SValue *val)
 {
   return val->type == SVAL_TYPE_INT ||
          val->type == SVAL_TYPE_FLOAT;
+}
+
+static bool is_cons(SValue *val)
+{
+  return val->type == SVAL_TYPE_CONS;
 }
 
 static size_t _estimate_str_size(SValue *svalue)
@@ -301,6 +319,7 @@ const struct _SValueStatic SVALUE = {
   .builtin_func = builtin_func,
   .scheme_func  = scheme_func,
 	.errorf       = errorf,
+  .typeerr      = typeerr,
 	._int         = _int,
   ._float       = _float,
   ._bool        = _bool,
@@ -308,6 +327,10 @@ const struct _SValueStatic SVALUE = {
   .special_form = special_form,
   .copy         = copy,
 
+  .is_false     = is_false,
+
+  .is_err       = is_err,
+  .is_cons      = is_cons,
   .is_symbol    = is_symbol,
   .is_number    = is_number,
 

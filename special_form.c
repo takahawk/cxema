@@ -10,7 +10,8 @@
 static bool is_special_form(const char *token)
 {
   return strcmp(token, "define") == 0 ||
-         strcmp(token, "lambda") == 0;
+         strcmp(token, "lambda") == 0 ||
+         strcmp(token, "cond")   == 0;
 }
 
 static SValue* from_string(const char *symbol)
@@ -19,15 +20,21 @@ static SValue* from_string(const char *symbol)
     return SVALUE.special_form(SPECIAL_FORM_DEFINE);
   if (strcmp(symbol, "lambda") == 0)
     return SVALUE.special_form(SPECIAL_FORM_LAMBDA);
+  if (strcmp(symbol, "cond") == 0)
+    return SVALUE.special_form(SPECIAL_FORM_COND);
 
   return SVALUE.errorf("unrecognized special form: \"%s\"", symbol);
 }
 
 static SValue* apply(SValue *sform, Evaluator eval, Env *env, SValue *args) {
-  if (SPECIAL_FORM_DEFINE == sform->val.special_form)
+  switch (sform->val.special_form) {
+  case SPECIAL_FORM_DEFINE: 
     return SPECIAL_FORMS.define(eval, env, args);
-  if (SPECIAL_FORM_LAMBDA == sform->val.special_form)
+  case SPECIAL_FORM_LAMBDA:
     return SPECIAL_FORMS.lambda(eval, env, args);
+  case SPECIAL_FORM_COND:
+    return SPECIAL_FORMS.cond(eval, env, args);
+  }
 
   return SVALUE.errorf("unrecognized special form");
 }
@@ -90,7 +97,7 @@ static SValue* lambda(Evaluator eval, Env *env, SValue *args)
   if (!CONS.list.is_all(params, SVALUE.is_symbol)) {
     return SVALUE.errorf("expected all parameters to be symbols (lambda)");
   }
-  SValue *body = args->val.cons.cdr->val.cons.car;
+  SValue *body = CONS.cdar(args);
   free(args);
 
   Env *func_env = ENV.form();
@@ -98,10 +105,49 @@ static SValue* lambda(Evaluator eval, Env *env, SValue *args)
   return SVALUE.scheme_func(func_env, params, body);
 }
 
+static SValue* cond(Evaluator eval, Env *env, SValue *args)
+{
+  if (!args) {
+    return SVALUE.errorf("at least one condition/expression pair is expected (cond)");
+  }
+
+  SValue *head = args;
+  SValue *res = &SVAL_VOID;
+  while (head) {
+    SValue *pair = CONS.car(head);
+    if (!SVALUE.is_cons(pair)) {
+      res = SVALUE.typeerr(pair, SVAL_TYPE_CONS);
+      goto end;
+    }
+
+    SValue *cond = CONS.car(pair);
+
+
+    SValue *cond_res = EVAL(env, cond);
+    if (cond_res->type == SVAL_TYPE_ERR) {
+      res = cond_res;
+      goto end;
+    }
+
+    if (!SVALUE.is_false(cond_res)) {
+      // condition is true - evaluate appropriate expression
+      SValue *expr = CONS.cdr(pair);
+      res = EVAL_ALL(env, expr);
+      goto end;
+    }
+    head = CONS.cdr(head);
+  }
+end:
+  // SVALUE.release(&args);
+  return res;
+}
+
 const struct _SpecialFormsStatic SPECIAL_FORMS = {
   .apply            = apply,
   .from_string      = from_string,
   .is_special_form  = is_special_form,
+
   .define           = define,
   .lambda           = lambda,
+  .cond             = cond,
 };

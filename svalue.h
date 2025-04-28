@@ -27,10 +27,6 @@ enum SValueType {
 };
 
 typedef enum SpecialForm SpecialForm;
-enum SpecialForm {
-  SPECIAL_FORM_DEFINE,
-  SPECIAL_FORM_LAMBDA,
-};
 
 typedef struct {
   bool is_builtin;
@@ -80,8 +76,12 @@ struct _SValueStatic {
 	SValue* (*errorf)       (const char *fmt, ...);
   SValue* (*typeerr)      (SValue *val, SValueType expected);
 
+  bool    (*is_false)     (SValue *val);
+
+  bool    (*is_err)       (SValue *val);
   bool    (*is_symbol)    (SValue *val);
   bool    (*is_number)    (SValue *val);
+  bool    (*is_cons)      (SValue *val);
 
 	char*   (*to_string) (SValue *svalue);
 

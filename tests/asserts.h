@@ -19,10 +19,11 @@ static void assert_type_equals(SValueType expected_type, SValue* val,
 {
 	if (expected_type != val->type) {
 		// TODO: print string types
-		fprintf(stderr, "\"%s:%d\" assertion failed. Expected: \"%s\", actual: \"%s\".\n",
+		fprintf(stderr, "\"%s:%d\" assertion failed. Expected: \"%s\", actual: \"%s\" (value=%s).\n",
                     file, line,
                     SVALUE_TYPE.to_string(expected_type),
-			              SVALUE_TYPE.to_string(val->type));
+			              SVALUE_TYPE.to_string(val->type),
+                    SVALUE.to_string(val));
     if (val->type == SVAL_TYPE_ERR) {
       fprintf(stderr, "Error is \"%s\"\n", val->val.err);
     }

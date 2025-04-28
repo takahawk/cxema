@@ -76,4 +76,26 @@ static SValue* eval(Env *env, SValue *val)
   return val;
 }
 
+static SValue* eval_all(Env *env, SValue *exprs)
+{
+  if (!CONS.is_list(exprs)) {
+    return SVALUE.errorf("list expected. found \"%s\"", SVALUE.to_string(exprs));
+  }
+
+  SValue *head = exprs;
+  SValue *res = NULL;
+  while (head) {
+    SValue *car = CONS.car(head);
+    if (res)
+      SVALUE.release(&res);
+    res = EVAL(env, car);
+    if (SVALUE.is_err(res))
+      return res;
+    head = CONS.cdr(head);
+  }
+
+  return res;
+}
+
 const Evaluator EVAL = eval;
+const Evaluator EVAL_ALL = eval_all;

@@ -6,7 +6,10 @@
 #include "svalue.h"
 
 struct _ConsStatic {
-  bool   (*is_list)     (SValue *sval);
+  SValue* (*car)     (SValue *sval);
+  SValue* (*cdr)     (SValue *sval);
+  SValue* (*cdar)    (SValue *sval);
+  bool    (*is_list) (SValue *sval);
 
   struct {
     size_t (*len)    (SValue *sval);

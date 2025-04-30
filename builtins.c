@@ -286,6 +286,18 @@ static bool _le_int(int64_t a, int64_t b) { return a <= b; }
 static bool _le_float(double a, double b) { return a <= b; }
 static SValue* _eval_le(SValue* args) { return _cmp_oper(args, _le_int, _le_float); }
 
+static SValue *_eval_not(SValue *args)
+{
+  if (CONS.list.len(args) != 1) {
+    return SVALUE.errorf("`not` is expecting exactly one argument");
+  }
+
+  if (SVALUE.is_false(CONS.car(args)))
+    return SVALUE._bool(true);
+
+  return SVALUE._bool(false);
+}
+
 static void define_all(Env *env)
 {
   env->setnocopy(env, "+", SVALUE.builtin_func(_eval_sum));
@@ -298,6 +310,7 @@ static void define_all(Env *env)
   env->setnocopy(env, "<", SVALUE.builtin_func(_eval_lt));
   env->setnocopy(env, ">=", SVALUE.builtin_func(_eval_ge));
   env->setnocopy(env, "<=", SVALUE.builtin_func(_eval_le));
+  env->setnocopy(env, "not", SVALUE.builtin_func(_eval_not));
 }
 
 const struct _BuiltinsStatic BUILTIN = {

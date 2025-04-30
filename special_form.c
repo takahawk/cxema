@@ -12,7 +12,9 @@ static bool is_special_form(const char *token)
   return strcmp(token, "define") == 0 ||
          strcmp(token, "lambda") == 0 ||
          strcmp(token, "cond")   == 0 ||
-         strcmp(token, "if")     == 0;
+         strcmp(token, "if")     == 0 ||
+         strcmp(token, "and")    == 0 ||
+         strcmp(token, "or")     == 0;
 }
 
 static SValue* from_string(const char *symbol)
@@ -25,6 +27,10 @@ static SValue* from_string(const char *symbol)
     return SVALUE.special_form(SPECIAL_FORM_COND);
   if (strcmp(symbol, "if") == 0)
     return SVALUE.special_form(SPECIAL_FORM_IF);
+  if (strcmp(symbol, "and") == 0)
+    return SVALUE.special_form(SPECIAL_FORM_AND);
+  if (strcmp(symbol, "or") == 0)
+    return SVALUE.special_form(SPECIAL_FORM_OR);
 
   return SVALUE.errorf("unrecognized special form: \"%s\"", symbol);
 }
@@ -39,6 +45,10 @@ static SValue* apply(SValue *sform, Evaluator eval, Env *env, SValue *args) {
     return SPECIAL_FORMS.cond(eval, env, args);
   case SPECIAL_FORM_IF:
     return SPECIAL_FORMS._if(eval, env, args);
+  case SPECIAL_FORM_AND:
+    return SPECIAL_FORMS.and(eval, env, args);
+  case SPECIAL_FORM_OR:
+    return SPECIAL_FORMS.or(eval, env, args);
   }
 
   return SVALUE.errorf("unrecognized special form");
@@ -181,6 +191,44 @@ static SValue* _if(Evaluator eval, Env *env, SValue *args)
   }
 }
 
+static SValue* and(Evaluator eval, Env *env, SValue *args)
+{
+  if (!args)
+    return SVALUE._bool(true);
+
+  SValue *res = NULL;
+  while (args) {
+    if (res)
+      SVALUE.release(&res);
+    res = EVAL(env, CONS.car(args));
+    if (SVALUE.is_false(res))
+      return res;
+
+    args = CONS.cdr(args);
+  }
+
+  return res;
+}
+
+static SValue* or(Evaluator eval, Env *env, SValue *args)
+{
+  if (!args)
+    return SVALUE._bool(false);
+
+  SValue *res = NULL;
+  while (args) {
+    if (res)
+      SVALUE.release(&res);
+    res = EVAL(env, CONS.car(args));
+    if (!SVALUE.is_false(res))
+      return res;
+
+    args = CONS.cdr(args);
+  }
+
+  return res;
+}
+
 const struct _SpecialFormsStatic SPECIAL_FORMS = {
   .apply            = apply,
   .from_string      = from_string,
@@ -190,4 +238,6 @@ const struct _SpecialFormsStatic SPECIAL_FORMS = {
   .lambda           = lambda,
   .cond             = cond,
   ._if              = _if,
+  .and              = and,
+  .or               = or,
 };

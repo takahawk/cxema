@@ -14,6 +14,8 @@ enum SpecialForm {
   SPECIAL_FORM_LAMBDA,
   SPECIAL_FORM_COND,
   SPECIAL_FORM_IF,
+  SPECIAL_FORM_AND,
+  SPECIAL_FORM_OR,
 };
 
 struct _SpecialFormsStatic {
@@ -25,6 +27,8 @@ struct _SpecialFormsStatic {
   SValue* (*lambda)           (Evaluator eval, Env *env, SValue *args);
   SValue* (*cond)             (Evaluator eval, Env *env, SValue *args);
   SValue* (*_if)              (Evaluator eval, Env *env, SValue *args);
+  SValue* (*and)              (Evaluator eval, Env *env, SValue *args);
+  SValue* (*or)               (Evaluator eval, Env *env, SValue *args);
 };
 
 extern const struct _SpecialFormsStatic SPECIAL_FORMS;

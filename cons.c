@@ -18,6 +18,11 @@ static SValue *cdar(SValue *val)
   return val->val.cons.cdr->val.cons.car;
 }
 
+static SValue *cddar(SValue *val)
+{
+  return val->val.cons.cdr->val.cons.cdr->val.cons.car;
+}
+
 static bool is_list(SValue *val) 
 {
   return val == NULL || 
@@ -45,6 +50,7 @@ const struct _ConsStatic CONS = {
   .car = car,
   .cdr = cdr,
   .cdar = cdar,
+  .cddar = cddar,
 
   .is_list = is_list,
   .list = {

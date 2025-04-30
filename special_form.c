@@ -11,7 +11,8 @@ static bool is_special_form(const char *token)
 {
   return strcmp(token, "define") == 0 ||
          strcmp(token, "lambda") == 0 ||
-         strcmp(token, "cond")   == 0;
+         strcmp(token, "cond")   == 0 ||
+         strcmp(token, "if")     == 0;
 }
 
 static SValue* from_string(const char *symbol)
@@ -22,6 +23,8 @@ static SValue* from_string(const char *symbol)
     return SVALUE.special_form(SPECIAL_FORM_LAMBDA);
   if (strcmp(symbol, "cond") == 0)
     return SVALUE.special_form(SPECIAL_FORM_COND);
+  if (strcmp(symbol, "if") == 0)
+    return SVALUE.special_form(SPECIAL_FORM_IF);
 
   return SVALUE.errorf("unrecognized special form: \"%s\"", symbol);
 }
@@ -34,6 +37,8 @@ static SValue* apply(SValue *sform, Evaluator eval, Env *env, SValue *args) {
     return SPECIAL_FORMS.lambda(eval, env, args);
   case SPECIAL_FORM_COND:
     return SPECIAL_FORMS.cond(eval, env, args);
+  case SPECIAL_FORM_IF:
+    return SPECIAL_FORMS._if(eval, env, args);
   }
 
   return SVALUE.errorf("unrecognized special form");
@@ -148,6 +153,34 @@ end:
   return res;
 }
 
+static SValue* _if(Evaluator eval, Env *env, SValue *args)
+{
+  int arglen = CONS.list.len(args);
+  if (arglen < 2) {
+    return SVALUE.errorf("if expected at least 2 arguments (if <condition> <then> [<else>]) (got %d)",
+                         CONS.list.len(args));
+  }
+
+  SValue *cond = CONS.car(args);
+  SValue *cond_res = EVAL(env, cond);
+
+  if (cond_res->type == SVAL_TYPE_ERR) {
+    return cond_res;
+  }
+
+  if (SVALUE.is_false(cond_res)) {
+    if (arglen == 2) // no else clause
+      return &SVAL_VOID;
+
+    SValue *_else = CONS.cddar(args);
+
+    return EVAL(env, _else);
+  } else {
+    SValue *then = CONS.cdar(args);
+    return EVAL(env, then);
+  }
+}
+
 const struct _SpecialFormsStatic SPECIAL_FORMS = {
   .apply            = apply,
   .from_string      = from_string,
@@ -156,4 +189,5 @@ const struct _SpecialFormsStatic SPECIAL_FORMS = {
   .define           = define,
   .lambda           = lambda,
   .cond             = cond,
+  ._if              = _if,
 };

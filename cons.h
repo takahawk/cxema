@@ -9,6 +9,7 @@ struct _ConsStatic {
   SValue* (*car)     (SValue *sval);
   SValue* (*cdr)     (SValue *sval);
   SValue* (*cdar)    (SValue *sval);
+  SValue* (*cddar)   (SValue *sval);
   bool    (*is_list) (SValue *sval);
 
   struct {

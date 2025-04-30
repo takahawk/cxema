@@ -36,7 +36,6 @@ static SValue* eval(Env *env, SValue *val)
     if (!res) {
       res = SVALUE.errorf("Undefined symbol \"%s\"", symbol);
     }
-    SVALUE.release(&val);
     return res;
   }
 
@@ -48,8 +47,6 @@ static SValue* eval(Env *env, SValue *val)
     switch (car->type) {
     case SVAL_TYPE_SPECIAL_FORM:
       res = SPECIAL_FORMS.apply(car, eval, env, cdr);
-      free(val); // freeing cons envelope without contents
-      SVALUE.release(&car);
       return res;
     case SVAL_TYPE_SYMBOL:
       val->val.cons.car = eval(env, car);
@@ -68,7 +65,6 @@ static SValue* eval(Env *env, SValue *val)
         res = _eval_scheme_func(car, cdr);
         
       }
-      SVALUE.release(&val);
       return res;
     }
   }
@@ -86,8 +82,6 @@ static SValue* eval_all(Env *env, SValue *exprs)
   SValue *res = NULL;
   while (head) {
     SValue *car = CONS.car(head);
-    if (res)
-      SVALUE.release(&res);
     res = EVAL(env, car);
     if (SVALUE.is_err(res))
       return res;

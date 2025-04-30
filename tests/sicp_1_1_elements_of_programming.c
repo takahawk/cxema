@@ -55,14 +55,14 @@ int main() {
                            "  (cond ((< x 0) (- x))\n"
                            "        (else x)))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
   assert_interprets_as(cx, "(abs 1337)", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
-  assert_interprets_as(cx, "(abs (-1337))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(abs (- 1337))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
 
   assert_interprets_as(cx, "(define (abs x)\n" 
                            "  (if (< x 0)\n"
                            "      (- x)\n"
                            "      x))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
   assert_interprets_as(cx, "(abs 1337)", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
-  assert_interprets_as(cx, "(abs (-1337))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(abs (- 1337))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
 
   assert_interprets_as(cx, "(define x 7)", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
   assert_interprets_as(cx, "(and (> x 5) (< x 10))", SVAL_TYPE_INT, "#t", __FILE__, __LINE__);

@@ -68,7 +68,6 @@ static SValue* define(Evaluator eval, Env *env, SValue *args)
     args->val.cons.car = args->val.cons.car->val.cons.cdr;
     SValue *func = SPECIAL_FORMS.lambda(eval, env, args);
     if (SVAL_TYPE_ERR == func->type) {
-      SVALUE.release(&args);
       return func;
     }
     env->set(env, name->val.symbol, func);
@@ -98,7 +97,6 @@ static SValue* lambda(Evaluator eval, Env *env, SValue *args)
     return SVALUE.errorf("expected all parameters to be symbols (lambda)");
   }
   SValue *body = CONS.cdar(args);
-  free(args);
 
   Env *func_env = ENV.form();
   func_env->parent = env;
@@ -121,24 +119,32 @@ static SValue* cond(Evaluator eval, Env *env, SValue *args)
     }
 
     SValue *cond = CONS.car(pair);
-
-
-    SValue *cond_res = EVAL(env, cond);
-    if (cond_res->type == SVAL_TYPE_ERR) {
-      res = cond_res;
-      goto end;
+    if (SVALUE.is_symbol(cond) && 
+        strcmp(cond->val.symbol, "else") == 0) {
+      if (CONS.cdr(head) != NULL) {
+        res = SVALUE.errorf("misplaced else clause - should be the last one in cond");
+        goto end;
+      }
+    } else {
+      SValue *cond_res = EVAL(env, cond);
+      if (cond_res->type == SVAL_TYPE_ERR) {
+        res = cond_res;
+        goto end;
+      }
+      if (SVALUE.is_false(cond_res)) {
+        head = CONS.cdr(head);
+        continue;
+      }
     }
 
-    if (!SVALUE.is_false(cond_res)) {
-      // condition is true - evaluate appropriate expression
-      SValue *expr = CONS.cdr(pair);
-      res = EVAL_ALL(env, expr);
-      goto end;
-    }
+    // condition is true - evaluate appropriate expression
+    SValue *expr = CONS.cdr(pair);
+    res = EVAL_ALL(env, expr);
+    goto end;
+
     head = CONS.cdr(head);
   }
 end:
-  // SVALUE.release(&args);
   return res;
 }
 

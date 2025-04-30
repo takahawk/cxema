@@ -46,7 +46,7 @@ static SValue* eval(Env *env, SValue *val)
     SValue* cdr = val->val.cons.cdr;
     switch (car->type) {
     case SVAL_TYPE_SPECIAL_FORM:
-      res = SPECIAL_FORMS.apply(car, eval, env, cdr);
+      res = SPECIAL_FORMS.apply(car, env, cdr);
       return res;
     case SVAL_TYPE_SYMBOL:
       val->val.cons.car = eval(env, car);

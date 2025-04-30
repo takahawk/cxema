@@ -35,26 +35,26 @@ static SValue* from_string(const char *symbol)
   return SVALUE.errorf("unrecognized special form: \"%s\"", symbol);
 }
 
-static SValue* apply(SValue *sform, Evaluator eval, Env *env, SValue *args) {
+static SValue* apply(SValue *sform, Env *env, SValue *args) {
   switch (sform->val.special_form) {
   case SPECIAL_FORM_DEFINE: 
-    return SPECIAL_FORMS.define(eval, env, args);
+    return SPECIAL_FORMS.define(env, args);
   case SPECIAL_FORM_LAMBDA:
-    return SPECIAL_FORMS.lambda(eval, env, args);
+    return SPECIAL_FORMS.lambda(env, args);
   case SPECIAL_FORM_COND:
-    return SPECIAL_FORMS.cond(eval, env, args);
+    return SPECIAL_FORMS.cond(env, args);
   case SPECIAL_FORM_IF:
-    return SPECIAL_FORMS._if(eval, env, args);
+    return SPECIAL_FORMS._if(env, args);
   case SPECIAL_FORM_AND:
-    return SPECIAL_FORMS.and(eval, env, args);
+    return SPECIAL_FORMS.and(env, args);
   case SPECIAL_FORM_OR:
-    return SPECIAL_FORMS.or(eval, env, args);
+    return SPECIAL_FORMS.or(env, args);
   }
 
   return SVALUE.errorf("unrecognized special form");
 }
 
-static SValue* define(Evaluator eval, Env *env, SValue *args)
+static SValue* define(Env *env, SValue *args)
 {
   if (!args || !args->val.cons.cdr || args->val.cons.cdr->val.cons.cdr) {
     return SVALUE.errorf("exactly two arguments are expected (define)");
@@ -65,7 +65,7 @@ static SValue* define(Evaluator eval, Env *env, SValue *args)
 
   if (SVAL_TYPE_SYMBOL == head->type) {
     // just a symbol - evaluate args beforehand and just store val
-    SValue *sval = eval(env, body);
+    SValue *sval = EVAL(env, body);
     if (SVAL_TYPE_ERR == sval->type) {
       return sval;
     }
@@ -81,7 +81,7 @@ static SValue* define(Evaluator eval, Env *env, SValue *args)
                            SVALUE_TYPE.to_string(name->type));
     }
     args->val.cons.car = args->val.cons.car->val.cons.cdr;
-    SValue *func = SPECIAL_FORMS.lambda(eval, env, args);
+    SValue *func = SPECIAL_FORMS.lambda(env, args);
     if (SVAL_TYPE_ERR == func->type) {
       return func;
     }
@@ -92,7 +92,7 @@ static SValue* define(Evaluator eval, Env *env, SValue *args)
   }
 }
 
-static SValue* lambda(Evaluator eval, Env *env, SValue *args)
+static SValue* lambda(Env *env, SValue *args)
 {
   if (!CONS.is_list(args) || CONS.list.len(args) != 2) {
     return SVALUE.errorf("expected list with exactly 2 arguments (lambda) (got %d)",
@@ -118,7 +118,7 @@ static SValue* lambda(Evaluator eval, Env *env, SValue *args)
   return SVALUE.scheme_func(func_env, params, body);
 }
 
-static SValue* cond(Evaluator eval, Env *env, SValue *args)
+static SValue* cond(Env *env, SValue *args)
 {
   if (!args) {
     return SVALUE.errorf("at least one condition/expression pair is expected (cond)");
@@ -163,7 +163,7 @@ end:
   return res;
 }
 
-static SValue* _if(Evaluator eval, Env *env, SValue *args)
+static SValue* _if(Env *env, SValue *args)
 {
   int arglen = CONS.list.len(args);
   if (arglen < 2) {
@@ -191,7 +191,7 @@ static SValue* _if(Evaluator eval, Env *env, SValue *args)
   }
 }
 
-static SValue* and(Evaluator eval, Env *env, SValue *args)
+static SValue* and(Env *env, SValue *args)
 {
   if (!args)
     return SVALUE._bool(true);
@@ -210,7 +210,7 @@ static SValue* and(Evaluator eval, Env *env, SValue *args)
   return res;
 }
 
-static SValue* or(Evaluator eval, Env *env, SValue *args)
+static SValue* or(Env *env, SValue *args)
 {
   if (!args)
     return SVALUE._bool(false);

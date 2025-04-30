@@ -3,11 +3,13 @@
 #include <stdlib.h>
 
 #include "builtins.h"
+#include "evaluator.h"
 #include "env.h"
 #include "parser.h"
 #include "svalue.h"
 #include "special_form.h"
 #include "util.h"
+
 
 static SValue* eval(Cxema *self, SValue *val) {
   return EVAL(self->genv, val);

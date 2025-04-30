@@ -20,7 +20,11 @@ test: $(TESTS)
 		test_bin="$${t}.test"; \
 		echo "Running $$t..."; \
 		$(CC) $(CFLAGS) -g -o "$$test_bin" $$t *.c $(CODEX_SRCS) $(LIBS); \
-		./$$test_bin; \
+		if [ "$$VALGRIND" = "1" ]; then \
+			valgrind --leak-check=full --error-exitcode=1 ./$$test_bin; \
+		else \
+			./$$test_bin; \
+		fi; \
 		if [ $$? -ne 0 ]; then \
 			echo "FAILED"; \
 			exit 1; \

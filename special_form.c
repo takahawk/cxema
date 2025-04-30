@@ -36,7 +36,9 @@ static SValue* from_string(const char *symbol)
 }
 
 static SValue* apply(SValue *sform, Env *env, SValue *args) {
-  switch (sform->val.special_form) {
+  SpecialForm form = sform->val.special_form;
+  SVALUE.release(&sform);
+  switch (form) {
   case SPECIAL_FORM_DEFINE: 
     return SPECIAL_FORMS.define(env, args);
   case SPECIAL_FORM_LAMBDA:
@@ -69,23 +71,25 @@ static SValue* define(Env *env, SValue *args)
     if (SVAL_TYPE_ERR == sval->type) {
       return sval;
     }
-    env->set(env,
-             head->val.symbol,
-             sval);
+    env->setnocopy(env, head->val.symbol, sval);
+    SVALUE.release(&head);
+    free(args);
     return &SVAL_VOID;
   } else if (SVAL_TYPE_CONS == head->type) {
     SValue *name = head->val.cons.car;
     if (SVAL_TYPE_SYMBOL != name->type) {
-      return SVALUE.errorf("expected symbol, got: %s (type=%s)",
-                           SVALUE.to_string(name),
-                           SVALUE_TYPE.to_string(name->type));
+      SValue* res = SVALUE.errorf("expected symbol, got: %s (type=%s)",
+                                  SVALUE.to_string(name),
+                                  SVALUE_TYPE.to_string(name->type));
+      SVALUE.release(&args);
+      return res;
     }
     args->val.cons.car = args->val.cons.car->val.cons.cdr;
     SValue *func = SPECIAL_FORMS.lambda(env, args);
     if (SVAL_TYPE_ERR == func->type) {
       return func;
     }
-    env->set(env, name->val.symbol, func);
+    env->setnocopy(env, name->val.symbol, func);
     return &SVAL_VOID;
   } else {
     return SVALUE.errorf("expected list or symbol");
@@ -100,7 +104,9 @@ static SValue* lambda(Env *env, SValue *args)
 
   }
 
-  SValue *params = args->val.cons.car;
+  SValue *params = CONS.car(args);
+  SValue *body = CONS.cdar(args);
+  free(args);
 
   if (!CONS.is_list(params)) {
     return SVALUE.errorf("expected list. got: %s (type=%s)", 
@@ -111,7 +117,7 @@ static SValue* lambda(Env *env, SValue *args)
   if (!CONS.list.is_all(params, SVALUE.is_symbol)) {
     return SVALUE.errorf("expected all parameters to be symbols (lambda)");
   }
-  SValue *body = CONS.cdar(args);
+
 
   Env *func_env = ENV.form();
   func_env->parent = env;

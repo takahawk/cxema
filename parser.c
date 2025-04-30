@@ -50,6 +50,8 @@ static SValue* _parse_cons(Tokenizer *t)
   if (NULL == token) {
     SVALUE.release(&res);
     return SVALUE.errorf("\")\" expected");
+  } else {
+    free(token);
   }
 end:
   return res;
@@ -117,6 +119,8 @@ static SValue* parse(const char *code)
   SValue *result = NULL;
 
   while (t->has_next(t)) {
+    if (result)
+      SVALUE.release(&result);
     char *token = t->next(t);
     result = _parse_value(token, t);
     if (result->type == SVAL_TYPE_ERR)

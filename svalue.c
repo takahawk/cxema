@@ -153,7 +153,7 @@ static SValue *copy(SValue *val)
       return SVALUE.special_form(val->val.special_form);
     case SVAL_TYPE_FUNC:
       if (val->val.func.is_builtin) {
-        return SVALUE.builtin_func(val->val.func.f.builtin);
+        return val;
       } else {
         Env    *env    = ENV.copy(val->val.func.f.scheme.env);
         SValue *params = SVALUE.copy(val->val.func.f.scheme.params);
@@ -295,9 +295,9 @@ static void release(SValue **pself)
   case SVAL_TYPE_CONS:
     SValue *car = self->val.cons.car;
     SValue *cdr = self->val.cons.cdr;
-    if (NULL != car)
+    if (car)
       SVALUE.release(&car);
-    if (NULL != cdr)
+    if (cdr)
       SVALUE.release(&cdr);
     break;
   case SVAL_TYPE_FUNC:

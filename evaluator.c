@@ -22,10 +22,16 @@ static SValue* _eval_scheme_func(SValue *func, SValue *args)
   for (;
        params && args;
        params = params->val.cons.cdr, args = args->val.cons.cdr) {
-    env->set(env, params->val.cons.car->val.symbol, args->val.cons.car);
+    env->setnocopy(env, params->val.cons.car->val.symbol, args->val.cons.car);
   }
 
-  return EVAL(env, SVALUE.copy(body));
+  SValue *res = EVAL(env, body);
+  SVALUE.release(&args);
+  SVALUE.release(&params);
+  env->release(&env);
+  free(func);
+
+  return res;
 }
 
 static SValue* eval(Env *env, SValue *val)
@@ -36,20 +42,22 @@ static SValue* eval(Env *env, SValue *val)
     if (!res) {
       res = SVALUE.errorf("Undefined symbol \"%s\"", symbol);
     }
+    SVALUE.release(&val);
     return res;
   }
 
   if (val->type == SVAL_TYPE_CONS) {
-  start:
     SValue* res;
     SValue* car = val->val.cons.car;
     SValue* cdr = val->val.cons.cdr;
+    // free cons envelope
+    free(val);
+  start:
     switch (car->type) {
     case SVAL_TYPE_SPECIAL_FORM:
-      res = SPECIAL_FORMS.apply(car, env, cdr);
-      return res;
+      return SPECIAL_FORMS.apply(car, env, cdr);
     case SVAL_TYPE_SYMBOL:
-      val->val.cons.car = eval(env, car);
+      car = eval(env, car);
       goto start;
     case SVAL_TYPE_FUNC:
       SValue *arg = cdr;
@@ -63,7 +71,6 @@ static SValue* eval(Env *env, SValue *val)
         res = car->val.func.f.builtin(cdr);
       } else {
         res = _eval_scheme_func(car, cdr);
-        
       }
       return res;
     }

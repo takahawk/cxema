@@ -14,20 +14,24 @@ static SValue* _eval_scheme_func(SValue *func, SValue *args)
   size_t actual_len   = CONS.list.len(args);
 
   if (expected_len != actual_len) {
+    SVALUE.release(&args);
+    SVALUE.release(&func);
     return SVALUE.errorf("Wrong number of arguments (expected=%d got=%d)",
                          expected_len,
                          actual_len);
   }
 
+  SValue *arg = args;
+  SValue *param = params;
   for (;
-       params && args;
-       params = params->val.cons.cdr, args = args->val.cons.cdr) {
-    env->setnocopy(env, params->val.cons.car->val.symbol, args->val.cons.car);
+       param && arg;
+       param = CONS.cdr(param), arg = CONS.cdr(arg)) {
+    env->setnocopy(env, CONS.car(param)->val.symbol, CONS.car(arg));
   }
 
-  SValue *res = EVAL(env, body);
-  SVALUE.release(&args);
+  CONS.list.release_envelope(&args);
   SVALUE.release(&params);
+  SValue *res = EVAL(env, body);
   env->release(&env);
   free(func);
 
@@ -69,6 +73,7 @@ static SValue* eval(Env *env, SValue *val)
 
       if (car->val.func.is_builtin) {
         res = car->val.func.f.builtin(cdr);
+        SVALUE.release(&cdr);
       } else {
         res = _eval_scheme_func(car, cdr);
       }

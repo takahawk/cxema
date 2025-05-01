@@ -1,7 +1,8 @@
 #include "cons.h"
 
 #include "svalue.h"
-#include <stdio.h>
+
+#include <stdlib.h>
 
 static SValue *car(SValue *val)
 {
@@ -30,6 +31,18 @@ static bool is_list(SValue *val)
          is_list(val->val.cons.cdr));
 }
 
+static void release_envelope(SValue **pval)
+{
+  SValue *val = *pval;
+  if (!val)
+    return;
+
+  SValue *cdr = CONS.cdr(val);
+  release_envelope(&cdr);
+  free(val);
+  *pval = NULL;
+}
+
 static size_t list_len(SValue *val) 
 {
   // TODO: iterate?
@@ -54,6 +67,7 @@ const struct _ConsStatic CONS = {
 
   .is_list = is_list,
   .list = {
+    .release_envelope = release_envelope,
     .len = list_len,
     .is_all = list_is_all,
   }

@@ -13,8 +13,10 @@ struct _ConsStatic {
   bool    (*is_list) (SValue *sval);
 
   struct {
-    size_t (*len)    (SValue *sval);
-    bool   (*is_all) (SValue *sval, bool (*cb) (SValue *val));
+    // release only cons cell envelopes, retaining contents
+    void   (*release_envelope) (SValue **sval);
+    size_t (*len)              (SValue *sval);
+    bool   (*is_all)           (SValue *sval, bool (*cb) (SValue *val));
   } list;
 };
 

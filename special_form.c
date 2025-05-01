@@ -62,8 +62,8 @@ static SValue* define(Env *env, SValue *args)
     return SVALUE.errorf("exactly two arguments are expected (define)");
   }
 
-  SValue *head = args->val.cons.car;
-  SValue *body = args->val.cons.cdr->val.cons.car;
+  SValue *head = CONS.car(args);
+  SValue *body = CONS.cdar(args);
 
   if (SVAL_TYPE_SYMBOL == head->type) {
     // just a symbol - evaluate args beforehand and just store val
@@ -73,7 +73,7 @@ static SValue* define(Env *env, SValue *args)
     }
     env->setnocopy(env, head->val.symbol, sval);
     SVALUE.release(&head);
-    free(args);
+    CONS.list.release_envelope(&args);
     return &SVAL_VOID;
   } else if (SVAL_TYPE_CONS == head->type) {
     SValue *name = head->val.cons.car;
@@ -106,7 +106,7 @@ static SValue* lambda(Env *env, SValue *args)
 
   SValue *params = CONS.car(args);
   SValue *body = CONS.cdar(args);
-  free(args);
+  CONS.list.release_envelope(&args);
 
   if (!CONS.is_list(params)) {
     return SVALUE.errorf("expected list. got: %s (type=%s)", 

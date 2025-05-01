@@ -12,7 +12,7 @@ TESTS = tests/*.c
 %.o: %.c $(HEADERS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(LIBS)
 
-repl: *.c $(CODEX_SRCS) execs/repl.c
+cxema: *.c $(CODEX_SRCS) execs/main.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 test: $(TESTS)

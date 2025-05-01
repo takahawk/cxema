@@ -4,7 +4,7 @@
 #include "cxema.h"
 #include "svalue.h"
 
-int main() {
+int repl() {
 	char buffer[4096];
 
 	Cxema *cxema = CXEMA.form();

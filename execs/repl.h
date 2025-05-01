@@ -16,9 +16,11 @@ int repl() {
 		}
 
 		SValue *result = cxema->interpret(cxema, buffer);
-		char *resstr = SVALUE.to_string(result);
-		printf("%s\n", resstr);
-		SVALUE.release(&result);
+    if (result != &SVAL_VOID) {
+      char *resstr = SVALUE.to_string(result);
+      printf("%s\n", resstr);
+      SVALUE.release(&result);
+    }
 	}
 
 	return 0;

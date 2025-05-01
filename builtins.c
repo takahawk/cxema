@@ -1,6 +1,7 @@
 #include "builtins.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "cons.h"
 #include "env.h"
@@ -289,13 +290,37 @@ static SValue* _eval_le(SValue* args) { return _cmp_oper(args, _le_int, _le_floa
 static SValue *_eval_not(SValue *args)
 {
   if (CONS.list.len(args) != 1) {
-    return SVALUE.errorf("`not` is expecting exactly one argument");
+    return SVALUE.errorf("`not` expects exactly one argument");
   }
 
   if (SVALUE.is_false(CONS.car(args)))
     return SVALUE._bool(true);
 
   return SVALUE._bool(false);
+}
+
+static SValue *_eval_display(SValue *args)
+{
+  if (CONS.list.len(args) != 1) {
+    return SVALUE.errorf("`display` expects exactly one argument");
+  }
+
+  char* str = SVALUE.to_string(CONS.car(args));
+  printf("%s", str);
+  free(str);
+
+  return &SVAL_VOID;
+}
+
+static SValue *_eval_newline(SValue *args)
+{
+  if (args) {
+    return SVALUE.errorf("`newline` expects no arguments");
+  }
+
+  printf("\n");
+
+  return &SVAL_VOID;
 }
 
 static void define_all(Env *env)
@@ -311,6 +336,9 @@ static void define_all(Env *env)
   env->setnocopy(env, ">=", SVALUE.builtin_func(_eval_ge));
   env->setnocopy(env, "<=", SVALUE.builtin_func(_eval_le));
   env->setnocopy(env, "not", SVALUE.builtin_func(_eval_not));
+
+  env->setnocopy(env, "display", SVALUE.builtin_func(_eval_display));
+  env->setnocopy(env, "newline", SVALUE.builtin_func(_eval_newline));
 }
 
 const struct _BuiltinsStatic BUILTIN = {

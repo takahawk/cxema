@@ -12,6 +12,7 @@ typedef struct SValue SValue;
 
 typedef enum SValueType SValueType;
 enum SValueType {
+  SVAL_TYPE_VOID,
 	SVAL_TYPE_INT,
   SVAL_TYPE_FLOAT,
   SVAL_TYPE_BOOL,
@@ -20,7 +21,6 @@ enum SValueType {
   SVAL_TYPE_FUNC,
   SVAL_TYPE_SYMBOL,
   SVAL_TYPE_SPECIAL_FORM,
-  SVAL_TYPE_VOID,
 
   // quasitype - used internally only
   SVAL_TYPE_NUMBER

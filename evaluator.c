@@ -93,11 +93,15 @@ static SValue* eval_all(Env *env, SValue *exprs)
   SValue *head = exprs;
   SValue *res = NULL;
   while (head) {
+    if (res)
+      SVALUE.release(&res);
     SValue *car = CONS.car(head);
+    SValue *cdr = CONS.cdr(head);
+    free(head);
     res = EVAL(env, car);
     if (SVALUE.is_err(res))
       return res;
-    head = CONS.cdr(head);
+    head = cdr;
   }
 
   return res;

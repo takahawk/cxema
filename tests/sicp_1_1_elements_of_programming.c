@@ -29,8 +29,6 @@ int main() {
   assert_interprets_as(cx, "(* pi (* radius radius))",
                        SVAL_TYPE_FLOAT, "314.159", __FILE__, __LINE__);
 
-  cx->interpret(cx, "(define circumference)");
-
   // 1.1.3 Evaluating combinations
   assert_interprets_as(cx, "(* (+ 2 (* 4 6)) (+ 3 5 7))", SVAL_TYPE_INT, "390", __FILE__, __LINE__);
 

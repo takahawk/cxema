@@ -76,7 +76,7 @@ static SValue* define(Env *env, SValue *args)
     CONS.list.release_envelope(&args);
     return &SVAL_VOID;
   } else if (SVAL_TYPE_CONS == head->type) {
-    SValue *name = head->val.cons.car;
+    SValue *name = CONS.car(head);
     if (SVAL_TYPE_SYMBOL != name->type) {
       SValue* res = SVALUE.errorf("expected symbol, got: %s (type=%s)",
                                   SVALUE.to_string(name),
@@ -90,6 +90,8 @@ static SValue* define(Env *env, SValue *args)
       return func;
     }
     env->setnocopy(env, name->val.symbol, func);
+    SVALUE.release(&name);
+    free(head);
     return &SVAL_VOID;
   } else {
     return SVALUE.errorf("expected list or symbol");
@@ -134,38 +136,47 @@ static SValue* cond(Env *env, SValue *args)
   SValue *res = &SVAL_VOID;
   while (head) {
     SValue *pair = CONS.car(head);
+    SValue *next = CONS.cdr(head);
+    free(head);
+    head = next;
     if (!SVALUE.is_cons(pair)) {
       res = SVALUE.typeerr(pair, SVAL_TYPE_CONS);
+      SVALUE.release(&pair);
       goto end;
     }
 
     SValue *cond = CONS.car(pair);
+    SValue *expr = CONS.cdr(pair);
+    free(pair);
     if (SVALUE.is_symbol(cond) && 
         strcmp(cond->val.symbol, "else") == 0) {
-      if (CONS.cdr(head) != NULL) {
+      SVALUE.release(&cond);
+      if (next != NULL) {
         res = SVALUE.errorf("misplaced else clause - should be the last one in cond");
+        SVALUE.release(&expr);
         goto end;
       }
     } else {
       SValue *cond_res = EVAL(env, cond);
       if (cond_res->type == SVAL_TYPE_ERR) {
         res = cond_res;
+        SVALUE.release(&expr);
         goto end;
       }
       if (SVALUE.is_false(cond_res)) {
-        head = CONS.cdr(head);
+        SVALUE.release(&expr);
+        SVALUE.release(&cond_res);
         continue;
       }
+      SVALUE.release(&cond_res);
     }
 
     // condition is true - evaluate appropriate expression
-    SValue *expr = CONS.cdr(pair);
     res = EVAL_ALL(env, expr);
     goto end;
-
-    head = CONS.cdr(head);
   }
 end:
+  SVALUE.release(&head);
   return res;
 }
 
@@ -173,28 +184,38 @@ static SValue* _if(Env *env, SValue *args)
 {
   int arglen = CONS.list.len(args);
   if (arglen < 2) {
+    SVALUE.release(&args);
     return SVALUE.errorf("if expected at least 2 arguments (if <condition> <then> [<else>]) (got %d)",
                          CONS.list.len(args));
   }
 
   SValue *cond = CONS.car(args);
+  SValue *then = CONS.cdar(args);
+  SValue *_else = arglen == 3 ? CONS.cddar(args) : NULL;
+
+  CONS.list.release_envelope(&args);
   SValue *cond_res = EVAL(env, cond);
 
   if (cond_res->type == SVAL_TYPE_ERR) {
+    SVALUE.release(&then);
+    if (_else) { SVALUE.release(&_else); }
     return cond_res;
   }
 
+  SValue *res;
   if (SVALUE.is_false(cond_res)) {
+    SVALUE.release(&then);
     if (arglen == 2) // no else clause
-      return &SVAL_VOID;
-
-    SValue *_else = CONS.cddar(args);
-
-    return EVAL(env, _else);
+      res = &SVAL_VOID;
+    else
+      res = EVAL(env, _else);
   } else {
-    SValue *then = CONS.cdar(args);
-    return EVAL(env, then);
+    if (_else) { SVALUE.release(&_else); }
+    res = EVAL(env, then);
   }
+
+  SVALUE.release(&cond_res);
+  return res;
 }
 
 static SValue* and(Env *env, SValue *args)
@@ -204,15 +225,19 @@ static SValue* and(Env *env, SValue *args)
 
   SValue *res = NULL;
   while (args) {
+    SValue *car = CONS.car(args);
+    SValue *cdr = CONS.cdr(args);
+    free(args);
+    args = cdr;
     if (res)
       SVALUE.release(&res);
-    res = EVAL(env, CONS.car(args));
+    res = EVAL(env, car);
     if (SVALUE.is_false(res))
-      return res;
+      goto end;
 
-    args = CONS.cdr(args);
   }
-
+end:
+  SVALUE.release(&args);
   return res;
 }
 
@@ -223,15 +248,20 @@ static SValue* or(Env *env, SValue *args)
 
   SValue *res = NULL;
   while (args) {
+    SValue *car = CONS.car(args);
+    SValue *cdr = CONS.cdr(args);
+    free(args);
+    args = cdr;
     if (res)
       SVALUE.release(&res);
-    res = EVAL(env, CONS.car(args));
+    res = EVAL(env, car);
     if (!SVALUE.is_false(res))
-      return res;
+      goto end;
 
-    args = CONS.cdr(args);
   }
 
+end:
+  SVALUE.release(&args);
   return res;
 }
 

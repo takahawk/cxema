@@ -35,7 +35,7 @@ valgrind: $(TESTS)
 		test_bin="$${t}.test"; \
 		echo "Valgrind checking $$t..."; \
 		$(CC) $(CFLAGS) -g -o "$$test_bin" $$t *.c $(CODEX_SRCS) $(LIBS); \
-		valgrind --quiet --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1 ./$$test_bin; \
+		valgrind --quiet --leak-check=full --show-leak-kinds=all --track-origins=yes --num-callers=30 --error-exitcode=1 ./$$test_bin; \
 		if [ $$? -ne 0 ]; then \
 			echo "FAILED memory check"; \
 			exit 1; \

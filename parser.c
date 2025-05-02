@@ -5,6 +5,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "cons.h"
 #include "svalue.h"
 #include "tokenizer.h"
 #include "util.h"
@@ -119,13 +120,12 @@ static SValue* parse(const char *code)
   SValue *result = NULL;
 
   while (t->has_next(t)) {
-    if (result)
-      SVALUE.release(&result);
     char *token = t->next(t);
-    result = _parse_value(token, t);
-    if (result->type == SVAL_TYPE_ERR)
-      break;
+    SValue* sval = _parse_value(token, t);
+    result = SVALUE.cons(sval, result);
   }
+
+  result = CONS.list.reverse(result);
 
 	t->release(&t);
 	return result;

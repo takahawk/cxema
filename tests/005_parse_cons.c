@@ -1,3 +1,4 @@
+#include "cons.h"
 #include "cxema.h"
 
 #include "asserts.h"
@@ -5,7 +6,7 @@
 int main() {
 	Cxema *cx = CXEMA.form();
 
-	SValue *sval = cx->parse(cx, "(1 3 3 7)");
+	SValue *sval = CONS.list.take_first(cx->parse(cx, "(1 3 3 7)"));
 
 	assert_type_equals(SVAL_TYPE_CONS, sval, __FILE__, __LINE__);
 

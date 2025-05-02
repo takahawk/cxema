@@ -8,9 +8,11 @@ typedef struct Cxema Cxema;
 struct Cxema {
   Env *genv;
 
-	SValue* (*parse)     (Cxema *self, char *code);
-	SValue* (*eval)      (Cxema *self, SValue *svalue);
-	SValue* (*interpret) (Cxema *self, char *code);
+	SValue* (*parse)         (Cxema *self, char *code);
+	SValue* (*eval)          (Cxema *self, SValue *svalue);
+  // parses and evaluates all, returns the last value
+	SValue* (*interpret)     (Cxema *self, char *code);
+  SValue* (*interpret_all) (Cxema *self, char *code);
 
 	void    (*release)   (Cxema **pself);
 };

@@ -3,8 +3,9 @@
 #include <stdlib.h>
 
 #include "builtins.h"
-#include "evaluator.h"
+#include "cons.h"
 #include "env.h"
+#include "evaluator.h"
 #include "parser.h"
 #include "svalue.h"
 #include "special_form.h"
@@ -23,8 +24,14 @@ static SValue* parse(Cxema *self, char *code)
 
 static SValue* interpret(Cxema *self, char *code)
 {
+  return CONS.list.take_last(self->interpret_all(self, code));
+}
+
+static SValue* interpret_all(Cxema *self, char *code)
+{
 	SValue *val = parse(self, code);
-  return self->eval(self, val);
+  CONS.list.eval_items(val, self->genv);
+  return val;
 }
 
 static void release(Cxema **pself)
@@ -51,6 +58,7 @@ const struct _CxemaStatic CXEMA = {
 		.parse = parse,
     .eval = eval,
 		.interpret = interpret,
+    .interpret_all = interpret_all,
 		.release = release,
 	},
 	.form = form

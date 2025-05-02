@@ -5,6 +5,8 @@
 
 #include "svalue.h"
 
+typedef struct Env Env;
+
 struct _ConsStatic {
   SValue* (*car)     (SValue *sval);
   SValue* (*cdr)     (SValue *sval);
@@ -14,9 +16,17 @@ struct _ConsStatic {
 
   struct {
     // release only cons cell envelopes, retaining contents
-    void   (*release_envelope) (SValue **sval);
-    size_t (*len)              (SValue *sval);
-    bool   (*is_all)           (SValue *sval, bool (*cb) (SValue *val));
+    void    (*release_envelope) (SValue **sval);
+    size_t  (*len)              (SValue *sval);
+    bool    (*is_all)           (SValue *sval, bool (*cb) (SValue *val));
+    SValue* (*reverse)          (SValue *list);
+    void    (*eval_items)       (SValue *list, Env *env);
+    void    (*println_items)    (SValue *list);
+
+    // take first value, release everything else
+    SValue* (*take_first)       (SValue *list);
+    // take last value, release everything else
+    SValue* (*take_last)        (SValue *list);
   } list;
 };
 

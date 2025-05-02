@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "cons.h"
 #include "cxema.h"
 #include "svalue.h"
 
@@ -15,12 +16,9 @@ int repl() {
 			exit(EXIT_FAILURE);
 		}
 
-		SValue *result = cxema->interpret(cxema, buffer);
-    if (result != &SVAL_VOID) {
-      char *resstr = SVALUE.to_string(result);
-      printf("%s\n", resstr);
-      SVALUE.release(&result);
-    }
+		SValue *result = cxema->interpret_all(cxema, buffer);
+    CONS.list.println_items(result);
+    SVALUE.release(&result);
 	}
 
 	return 0;

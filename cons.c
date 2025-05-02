@@ -1,7 +1,9 @@
 #include "cons.h"
 
+#include "evaluator.h"
 #include "svalue.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 static SValue *car(SValue *val)
@@ -59,6 +61,65 @@ static bool list_is_all(SValue *sval, bool (*cb) (SValue *val))
   return cb(sval->val.cons.car) && list_is_all(sval->val.cons.cdr, cb);
 }
 
+static SValue* list_reverse(SValue *list)
+{
+  SValue* head = list;
+  SValue* reversed = NULL;
+
+  while (head) {
+    reversed = SVALUE.cons(CONS.car(head), reversed);
+    SValue *next = CONS.cdr(head);
+    free(head);
+    head = next;
+  }
+
+  return reversed;
+}
+
+static void list_eval_items(SValue *list, Env *env)
+{
+  while (list) {
+    list->val.cons.car = EVAL(env, CONS.car(list));
+    list = CONS.cdr(list);
+  }
+}
+
+static void list_println_items(SValue *list)
+{
+  while (list) {
+    char *str = SVALUE.to_string(CONS.car(list));
+    printf("%s\n", str);
+    free(str);
+    list = CONS.cdr(list);
+  }
+}
+
+static SValue* list_take_first(SValue *list)
+{
+  SValue *car = CONS.car(list);
+  SValue *cdr = CONS.cdr(list);
+  free(list);
+
+  SVALUE.release(&cdr);
+
+  return car;
+}
+
+static SValue* list_take_last(SValue *list)
+{
+  SValue *cdr;
+  while (cdr = CONS.cdr(list)) {
+    SValue *car = CONS.car(list);
+    SVALUE.release(&car);
+    free(list);
+    list = cdr;
+  }
+  SValue *car = CONS.car(list);
+  free(list);
+
+  return car;
+}
+
 const struct _ConsStatic CONS = {
   .car = car,
   .cdr = cdr,
@@ -70,5 +131,11 @@ const struct _ConsStatic CONS = {
     .release_envelope = release_envelope,
     .len = list_len,
     .is_all = list_is_all,
+    .reverse = list_reverse,
+    .eval_items = list_eval_items,
+    .println_items = list_println_items,
+
+    .take_first = list_take_first,
+    .take_last  = list_take_last,
   }
 };

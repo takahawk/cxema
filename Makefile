@@ -1,7 +1,7 @@
 CC ?= gcc
 CFLAGS = -g -I./ -Wno-discarded-qualifiers
 HEADERS = *.h
-CODEX_SRCS = codex/ds/array.c codex/mem/std_allocator.c
+CODEX_SRCS = codex/ds/array.c codex/mem/std_allocator.c codex/fs/files.c
 OBJS = *.o
 LIBS = -lm
 

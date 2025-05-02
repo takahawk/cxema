@@ -1,4 +1,8 @@
+#include <stdio.h>
+
 #include "repl.h"
+#include "file_interpreter.h"
+
 
 int main(int argc, char **argv)
 {
@@ -6,5 +10,10 @@ int main(int argc, char **argv)
     return repl();
   }
 
-  return -1;
+  if (argc != 2) {
+    printf("Usage: cxema [FILENAME]\n");
+    return -1;
+  }
+
+  return interpret_file(argv[1]);
 }

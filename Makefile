@@ -4,6 +4,8 @@ HEADERS = *.h
 CODEX_SRCS = codex/ds/array.c codex/mem/std_allocator.c codex/fs/files.c
 OBJS = *.o
 LIBS = -lm
+PREFIX ?= /usr/local
+BINDIR = $(PREFIX)/bin
 
 TESTS = tests/*.c
 
@@ -14,6 +16,10 @@ TESTS = tests/*.c
 
 cxema: *.c $(CODEX_SRCS) execs/main.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+install: cxema
+	install -d $(BINDIR)
+	install -m 755 cxema $(BINDIR)
 
 test: $(TESTS)
 	@for t in $^; do \

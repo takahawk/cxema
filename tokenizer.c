@@ -1,6 +1,7 @@
 #include "tokenizer.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,7 +10,20 @@
 
 static bool has_next(Tokenizer *self)
 {
-  while (one_of(self->str[self->i], " \n\t")) self->i++;
+  char *str = self->str;
+  int i = self->i;
+  while (one_of(str[i], " \n\t")) i++;
+
+  if (str[i] == ';') {
+    // comments. skip
+    char c;
+    while ((c = str[i]) != '\n' && c != '\0') {
+      i++;
+    }
+
+    while (one_of(str[i], " \n\t")) i++;
+  }
+  self->i = i;
   return '\0' != self->str[self->i];
 }
 
@@ -21,10 +35,7 @@ static char* next(Tokenizer *self)
 	char *str = self->str;
 	char c;
 	size_t start, i;
-	start = self->i;
-	while (one_of(str[start], " \n\t")) start++;
-
-	i = start;
+	i = start = self->i;
 
 	while (!((c = str[i]) == '\0' || one_of(c, " \n\t"))) {
 		i++;

@@ -74,6 +74,15 @@ int main() {
   assert_interprets_as(cx, "(>= 1337 1337)", SVAL_TYPE_BOOL, "#t", __FILE__, __LINE__);
   assert_interprets_as(cx, "(>= 0111 1337)", SVAL_TYPE_BOOL, "#f", __FILE__, __LINE__);
   assert_interprets_as(cx, "(>= 1337 0111)", SVAL_TYPE_BOOL, "#t", __FILE__, __LINE__);
+
+  // TODO: exercises 1.1-1.3
+  
+  // Exercise 1.4
+  assert_interprets_as(cx, "(define (a-plus-abs a b)\n"
+                           "  ((if (> b 0) + -) a b))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(a-plus-abs 1000 337)", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(a-plus-abs 1000 (- 337))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+
 	cx->release(&cx);
 	return 0;
 }

@@ -17,6 +17,8 @@ enum SpecialForm {
 };
 
 struct _SpecialFormsStatic {
+  // warning: apply can possibly return not completely evaluated results
+  //          (for sake of possible tail call optimizations)
   SValue* (*apply)            (SValue *sform, Env *env, SValue *args);
   bool    (*is_special_form)  (const char *token);
   SValue* (*from_string)      (const char *token);

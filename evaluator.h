@@ -13,4 +13,8 @@ extern const Evaluator EVAL;
 // element evaluated independently
 // last value is returned
 extern const Evaluator EVAL_ALL;
+
+// evaluate multiple clauses, but last one, returning
+// it unevaluated
+extern const Evaluator EVAL_ALL_BUT_ONE;
 #endif // !CXEMA_EVALUATOR_H_

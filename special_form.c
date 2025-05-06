@@ -172,7 +172,7 @@ static SValue* cond(Env *env, SValue *args)
     }
 
     // condition is true - evaluate appropriate expression
-    res = EVAL_ALL(env, expr);
+    res = EVAL_ALL_BUT_ONE(env, expr);
     goto end;
   }
 end:
@@ -208,10 +208,10 @@ static SValue* _if(Env *env, SValue *args)
     if (arglen == 2) // no else clause
       res = &SVAL_VOID;
     else
-      res = EVAL(env, _else);
+      res = _else;
   } else {
     if (_else) { SVALUE.release(&_else); }
-    res = EVAL(env, then);
+    res = then;
   }
 
   SVALUE.release(&cond_res);
@@ -231,6 +231,10 @@ static SValue* and(Env *env, SValue *args)
     args = cdr;
     if (res)
       SVALUE.release(&res);
+    if (!args) { // last one, can be TCO'd
+      res = car;
+      break;
+    }
     res = EVAL(env, car);
     if (SVALUE.is_false(res))
       goto end;
@@ -254,6 +258,10 @@ static SValue* or(Env *env, SValue *args)
     args = cdr;
     if (res)
       SVALUE.release(&res);
+    if (!args) { // last one, can be TCO'd
+      res = car;
+      break;
+    }
     res = EVAL(env, car);
     if (!SVALUE.is_false(res))
       goto end;

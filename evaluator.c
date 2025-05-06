@@ -59,7 +59,7 @@ static SValue* eval(Env *env, SValue *val)
   start:
     switch (car->type) {
     case SVAL_TYPE_SPECIAL_FORM:
-      return SPECIAL_FORMS.apply(car, env, cdr);
+      return EVAL(env, SPECIAL_FORMS.apply(car, env, cdr));
     case SVAL_TYPE_CONS:
     case SVAL_TYPE_SYMBOL:
       car = eval(env, car);
@@ -85,7 +85,7 @@ static SValue* eval(Env *env, SValue *val)
   return val;
 }
 
-static SValue* eval_all(Env *env, SValue *exprs)
+static SValue* eval_all_but_one(Env *env, SValue *exprs)
 {
   if (!CONS.is_list(exprs)) {
     return SVALUE.errorf("list expected. found \"%s\"", SVALUE.to_string(exprs));
@@ -94,11 +94,17 @@ static SValue* eval_all(Env *env, SValue *exprs)
   SValue *head = exprs;
   SValue *res = NULL;
   while (head) {
+    // all
     if (res)
       SVALUE.release(&res);
     SValue *car = CONS.car(head);
     SValue *cdr = CONS.cdr(head);
     free(head);
+    if (!cdr) {
+      // but last one
+      res = car;
+      break;
+    }
     res = EVAL(env, car);
     if (SVALUE.is_err(res))
       return res;
@@ -108,5 +114,11 @@ static SValue* eval_all(Env *env, SValue *exprs)
   return res;
 }
 
+static SValue* eval_all(Env *env, SValue *exprs)
+{
+  return EVAL(env, eval_all_but_one(env, exprs));
+}
+
 const Evaluator EVAL = eval;
 const Evaluator EVAL_ALL = eval_all;
+const Evaluator EVAL_ALL_BUT_ONE = eval_all_but_one;

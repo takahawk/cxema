@@ -83,6 +83,13 @@ int main() {
   assert_interprets_as(cx, "(a-plus-abs 1000 337)", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
   assert_interprets_as(cx, "(a-plus-abs 1000 (- 337))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
 
+  // Exercise 1.5
+  assert_interprets_as(cx, "(define (p) (p))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  assert_interprets_as(cx, "(define (test x y)\n"
+                           "  (if (= x 0) 0 y))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
+  // uncomment to test tail recursion (and applicative order, yeah) - should run indenitely
+  // assert_interprets_as(cx, "(test 0 (p))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
+
 	cx->release(&cx);
 	return 0;
 }

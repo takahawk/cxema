@@ -100,15 +100,15 @@ static SValue* define(Env *env, SValue *args)
 
 static SValue* lambda(Env *env, SValue *args)
 {
-  if (!CONS.is_list(args) || CONS.list.len(args) != 2) {
-    return SVALUE.errorf("expected list with exactly 2 arguments (lambda) (got %d)",
+  if (!CONS.is_list(args) || CONS.list.len(args) < 2) {
+    return SVALUE.errorf("expected list at least 2 arguments (lambda) (got %d)",
                          CONS.list.len(args));
 
   }
 
   SValue *params = CONS.car(args);
-  SValue *body = CONS.cdar(args);
-  CONS.list.release_envelope(&args);
+  SValue *body = CONS.cdr(args);
+  free(args);
 
   if (!CONS.is_list(params)) {
     return SVALUE.errorf("expected list. got: %s (type=%s)", 

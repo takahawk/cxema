@@ -31,7 +31,7 @@ static SValue* _eval_scheme_func(SValue *func, SValue *args)
 
   CONS.list.release_envelope(&args);
   SVALUE.release(&params);
-  SValue *res = EVAL(env, body);
+  SValue *res = EVAL_ALL(env, body);
   env->release(&env);
   free(func);
 

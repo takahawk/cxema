@@ -76,7 +76,9 @@ struct _SValueStatic {
 	SValue* (*errorf)       (const char *fmt, ...);
   SValue* (*typeerr)      (SValue *val, SValueType expected);
 
-  bool    (*is_false)     (SValue *val);
+  bool    (*is_false)        (SValue *val);
+  bool    (*is_scheme_func)  (SValue *val);
+  bool    (*is_special_form) (SValue *val);
 
   bool    (*is_err)       (SValue *val);
   bool    (*is_symbol)    (SValue *val);

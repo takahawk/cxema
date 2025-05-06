@@ -41,7 +41,6 @@ tco:
     SValue *cdr = CONS.cdr(last);
 
     while (SVALUE.is_special_form(car)) {
-      free(last);
       last = SPECIAL_FORMS.apply(car, env, cdr);
       goto tco;
     }
@@ -53,8 +52,8 @@ tco:
       CONS.list.eval_items(cdr, env);
 
       free(last);
-      free(func);
-      env->release(&env);
+      SVALUE.release(&func);
+      // env->release(&env);
 
       func = car;
       args = cdr;

@@ -190,6 +190,16 @@ static bool is_cons(SValue *val)
   return val->type == SVAL_TYPE_CONS;
 }
 
+static bool is_scheme_func(SValue *val)
+{
+  return val->type == SVAL_TYPE_FUNC && !val->val.func.is_builtin;
+}
+
+static bool is_special_form(SValue *val)
+{
+  return val->type == SVAL_TYPE_SPECIAL_FORM;
+}
+
 static size_t _estimate_str_size(SValue *svalue)
 {
   char buffer[256];
@@ -324,12 +334,14 @@ const struct _SValueStatic SVALUE = {
   .special_form = special_form,
   .copy         = copy,
 
-  .is_false     = is_false,
+  .is_false       = is_false,
+  .is_scheme_func = is_scheme_func,
 
-  .is_err       = is_err,
-  .is_cons      = is_cons,
-  .is_symbol    = is_symbol,
-  .is_number    = is_number,
+  .is_err          = is_err,
+  .is_cons         = is_cons,
+  .is_symbol       = is_symbol,
+  .is_number       = is_number,
+  .is_special_form = is_special_form,
 
 	.to_string = sval_to_string,
 

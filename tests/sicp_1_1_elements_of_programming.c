@@ -87,7 +87,7 @@ int main() {
   assert_interprets_as(cx, "(define (p) (p))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
   assert_interprets_as(cx, "(define (test x y)\n"
                            "  (if (= x 0) 0 y))", SVAL_TYPE_VOID, "void", __FILE__, __LINE__);
-  // uncomment to test tail recursion (and applicative order, yeah) - should run indenitely
+  // uncomment to test tail recursion (and applicative order, yeah) - should run indenitely (no stack overflows)
   // assert_interprets_as(cx, "(test 0 (p))", SVAL_TYPE_INT, "1337", __FILE__, __LINE__);
 
 	cx->release(&cx);

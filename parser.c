@@ -22,31 +22,19 @@ static SValue* _parse_cons(Tokenizer *t);
 static SValue* _parse_cons(Tokenizer *t)
 {
   SValue *res = NULL;
-  char *token = t->next(t);
-  if (NULL == token) {
-    return SVALUE.errorf("Unexpected end of input");
-  }
-
-  SValue* car = _parse_value(token, t);
-  if (car->type == SVAL_TYPE_ERR) {
-    return car;
-  }
-  res = SVALUE.cons(car, NULL);
-  SValue* tail = res;
+  char *token;
   while ((token = t->next(t)) != NULL && strcmp(token, ")") != 0) {
     if (NULL == token) {
       SVALUE.release(&res);
       return SVALUE.errorf("Unexpected end of input");
     }
 
-    car = _parse_value(token, t);
-    if (car->type == SVAL_TYPE_ERR) {
+    SValue *car = _parse_value(token, t);
+    if (car && car->type == SVAL_TYPE_ERR) {
       SVALUE.release(&res);
       return car;
     }
-    SValue* newtail = SVALUE.cons(car, NULL);
-    tail->val.cons.cdr = newtail;
-    tail = newtail;
+    res = SVALUE.cons(car, res);
   }
   if (NULL == token) {
     SVALUE.release(&res);
@@ -55,7 +43,7 @@ static SValue* _parse_cons(Tokenizer *t)
     free(token);
   }
 end:
-  return res;
+  return CONS.list.reverse(res);
 }
 
 static SValue* _parse_value(char *token, Tokenizer *t)

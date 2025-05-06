@@ -48,9 +48,6 @@ static SValue* symbol(const char *symbol)
 
 static SValue* cons(SValue *car, SValue *cdr)
 {
-  if (NULL == car) {
-    return errorf("Empty cons are disallowed");
-  }
   SValue *val = malloc(sizeof(*val));
   val->type = SVAL_TYPE_CONS;
   val->val.cons.car = car;

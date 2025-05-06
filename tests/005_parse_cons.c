@@ -43,6 +43,9 @@ int main() {
 
   SVALUE.release(&sval);
   free(strval);
+
+  sval = CONS.list.take_first(cx->parse(cx, "()"));
+  assert_null(sval);
 	cx->release(&cx);
 
 	return 0;

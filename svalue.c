@@ -174,6 +174,11 @@ static bool is_err(SValue *val)
   return val->type == SVAL_TYPE_ERR;
 }
 
+static bool is_void(SValue *val)
+{
+  return val->type == SVAL_TYPE_VOID;
+}
+
 static bool is_symbol(SValue *val)
 {
   return val->type == SVAL_TYPE_SYMBOL;
@@ -337,6 +342,7 @@ const struct _SValueStatic SVALUE = {
   .is_false       = is_false,
   .is_scheme_func = is_scheme_func,
 
+  .is_void         = is_void,
   .is_err          = is_err,
   .is_cons         = is_cons,
   .is_symbol       = is_symbol,

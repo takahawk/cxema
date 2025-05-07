@@ -84,6 +84,7 @@ struct _SValueStatic {
   bool    (*is_symbol)    (SValue *val);
   bool    (*is_number)    (SValue *val);
   bool    (*is_cons)      (SValue *val);
+  bool    (*is_void)      (SValue *val);
 
 	char*   (*to_string) (SValue *svalue);
 

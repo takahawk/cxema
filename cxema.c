@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 
+#include "codex/fs/files.h"
+
 #include "builtins.h"
 #include "cons.h"
 #include "env.h"
@@ -34,6 +36,22 @@ static SValue* interpret_all(Cxema *self, char *code)
   return val;
 }
 
+static SValue* interpret_file(Cxema *self, char *filename)
+{
+  char *buf = FILES.read_to_str(filename);
+  if (!buf)
+    return SVALUE.errorf("failed to read file: %s", filename);
+  return self->interpret(self, buf);
+}
+
+static SValue* interpret_file_all(Cxema *self, char *filename)
+{
+  char *buf = FILES.read_to_str(filename);
+  if (!buf)
+    return SVALUE.errorf("failed to read file: %s", filename);
+  return self->interpret_all(self, buf);
+}
+
 static void release(Cxema **pself)
 {
   Cxema *self = *pself;
@@ -59,6 +77,8 @@ const struct _CxemaStatic CXEMA = {
     .eval = eval,
 		.interpret = interpret,
     .interpret_all = interpret_all,
+    .interpret_file = interpret_file,
+    .interpret_file_all = interpret_file_all, 
 		.release = release,
 	},
 	.form = form

@@ -7,7 +7,14 @@ LIBS = -lm
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
 
-TESTS = tests/*.c
+TEST_FILES := $(wildcard tests/*.c)
+FAILED_TEST_BINS := $(wildcard tests/*.test)
+
+ifeq ($(strip $(FAILED_TEST_BINS)),)
+  TESTS := $(TEST_FILES)
+else
+  TESTS := $(patsubst %.test,%,$(FAILED_TEST_BINS))
+endif
 
 .PHONY: test
 

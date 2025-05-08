@@ -65,9 +65,9 @@ static Env* form()
   Env* env = malloc(sizeof(Env));
 
   *env = ENV.prototype;
-  env->symbols = ARRAY.form(&STD_ALLOCATOR, sizeof(char*));
+  env->symbols = ARRAY.form(sizeof(char*));
   env->symbols->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
-  env->values = ARRAY.form(&STD_ALLOCATOR, sizeof(SValue*));
+  env->values = ARRAY.form(sizeof(SValue*));
   // TODO: release svalues
   env->values->release_cb = RELEASE_CB.form(&STD_ALLOCATOR, _release_sval);
 

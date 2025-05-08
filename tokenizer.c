@@ -12,6 +12,7 @@ static bool has_next(Tokenizer *self)
 {
   char *str = self->str;
   int i = self->i;
+skip:
   while (one_of(str[i], " \n\t")) i++;
 
   if (str[i] == ';') {
@@ -21,7 +22,7 @@ static bool has_next(Tokenizer *self)
       i++;
     }
 
-    while (one_of(str[i], " \n\t")) i++;
+    goto skip;
   }
   self->i = i;
   return '\0' != self->str[self->i];

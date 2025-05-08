@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "codex/ds/array.h"
+
 #include "svalue.h"
 
 typedef struct Env Env;
@@ -22,6 +24,8 @@ struct _ConsStatic {
     SValue* (*reverse)          (SValue *list);
     void    (*eval_items)       (SValue *list, Env *env);
     void    (*println_items)    (SValue *list);
+    // Array of SValues ofc
+    Array*  (*to_array)         (SValue *list);
 
     // take first value, release everything else
     SValue* (*take_first)       (SValue *list);

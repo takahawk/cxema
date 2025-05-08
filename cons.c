@@ -94,6 +94,31 @@ static void list_println_items(SValue *list)
   }
 }
 
+static void _release_sval(Allocator *a, void **sval)
+{
+  SValue *val = *(SValue **) sval;
+  SVALUE.release(&val);
+  *sval = NULL;
+}
+
+static Array* list_to_array(SValue *list)
+{
+  Array *array = ARRAY.form(sizeof(SValue*));
+  array->release_cb = RELEASE_CB.form(&STD_ALLOCATOR, _release_sval);
+
+  SValue *head = list;
+
+  while (head) {
+    SValue *car = CONS.car(head);
+    SValue *cdr = CONS.cdr(head);
+    free(head);
+    array->add(array, &car);
+    head = cdr;
+  }
+
+  return array;
+}
+
 static SValue* list_take_first(SValue *list)
 {
   SValue *car = CONS.car(list);
@@ -134,6 +159,7 @@ const struct _ConsStatic CONS = {
     .reverse = list_reverse,
     .eval_items = list_eval_items,
     .println_items = list_println_items,
+    .to_array = list_to_array,
 
     .take_first = list_take_first,
     .take_last  = list_take_last,

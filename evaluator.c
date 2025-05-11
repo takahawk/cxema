@@ -118,31 +118,25 @@ static SValue* eval(Env *env, SValue *val)
 
 static SValue* eval_all_but_one(Env *env, SValue *exprs)
 {
-  if (!CONS.is_list(exprs)) {
-    return SVALUE.errorf("list expected. found \"%s\"", SVALUE.to_string(exprs));
+  if (!CONS.is_list(exprs) || !exprs) {
+    return SVALUE.errorf("non-empty list expected. found \"%s\"", SVALUE.to_string(exprs));
   }
 
   SValue *head = exprs;
-  SValue *res = NULL;
-  while (head) {
+  while (CONS.cdr(head)) {
     // all
-    if (res)
-      SVALUE.release(&res);
     SValue *car = CONS.car(head);
     SValue *cdr = CONS.cdr(head);
     free(head);
-    if (!cdr) {
-      // but last one
-      res = car;
-      break;
-    }
-    res = EVAL(env, car);
-    if (SVALUE.is_err(res))
+    SValue *res = EVAL(env, car);
+    if (SVALUE.is_err(res)) {
+      SVALUE.release(&head);
       return res;
+    }
     head = cdr;
   }
 
-  return res;
+  return head;
 }
 
 static SValue* eval_all(Env *env, SValue *exprs)

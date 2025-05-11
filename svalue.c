@@ -129,7 +129,7 @@ static SValue *special_form(SpecialForm form)
   return value;
 }
 
-static SValue *copy(SValue *val)
+static SValue* _copy_with_parent_env(SValue *val, Env *penv) 
 {
   if (!val)
     return NULL;
@@ -137,8 +137,8 @@ static SValue *copy(SValue *val)
     case SVAL_TYPE_SYMBOL:
       return SVALUE.symbol(val->val.symbol);
     case SVAL_TYPE_CONS:
-      SValue *car = SVALUE.copy(val->val.cons.car);
-      SValue *cdr = SVALUE.copy(val->val.cons.cdr);
+      SValue *car = _copy_with_parent_env(val->val.cons.car, penv);
+      SValue *cdr = _copy_with_parent_env(val->val.cons.cdr, penv);
       return SVALUE.cons(car, cdr);
     case SVAL_TYPE_INT:
     case SVAL_TYPE_FLOAT:
@@ -154,13 +154,22 @@ static SValue *copy(SValue *val)
       } else {
         Env    *env    = ENV.copy(val->val.func.f.scheme.env);
         SValue *params = SVALUE.copy(val->val.func.f.scheme.params);
-        SValue *body   = SVALUE.copy(val->val.func.f.scheme.body);
+        SValue *body   = _copy_with_parent_env(val->val.func.f.scheme.body, env);
+
+        if (penv) {
+          env->parent = penv;
+        }
 
         return SVALUE.scheme_func(env, params, body);
       }
     default:
       return SVALUE.errorf("copy is not implemented for type: %s", SVALUE_TYPE.to_string(val->type));
   }
+}
+
+static SValue *copy(SValue *val)
+{
+  _copy_with_parent_env(val, NULL);
 }
 
 static bool is_false(SValue *val)
@@ -217,6 +226,11 @@ static size_t _estimate_str_size(SValue *svalue)
   case SVAL_TYPE_SYMBOL:
     return strlen(svalue->val.symbol) + 1;
   case SVAL_TYPE_FUNC:
+      if (!svalue->val.func.is_builtin) {
+        return _estimate_str_size(svalue->val.func.f.scheme.params)
+             + _estimate_str_size(svalue->val.func.f.scheme.body)
+             + strlen("FUNCK: {  }");
+      }
     return strlen("<function>") + 1;
   case SVAL_TYPE_INT:
     return sprintf(buffer, "%ld", svalue->val._int) + 1;
@@ -250,6 +264,15 @@ static int _sval_to_string(SValue *svalue, char *buffer)
   case SVAL_TYPE_SYMBOL:
     return sprintf(buffer, "%s", svalue->val.symbol);
   case SVAL_TYPE_FUNC:
+    if (!svalue->val.func.is_builtin) {
+        int len = 0;
+        len += sprintf(buffer, "FUNCK: ");
+        len += sprintf(buffer + len, "{ ");
+        len += _sval_to_string(svalue->val.func.f.scheme.params, buffer + len);
+        len += _sval_to_string(svalue->val.func.f.scheme.body, buffer + len);
+        len += sprintf(buffer + len, " }");
+        return len;
+    }
     return sprintf(buffer, "<function>");
   case SVAL_TYPE_INT:
     return sprintf(buffer, "%ld", svalue->val._int);

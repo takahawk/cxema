@@ -136,7 +136,9 @@ static SValue* eval_all_but_one(Env *env, SValue *exprs)
     head = cdr;
   }
 
-  return head;
+  SValue *res = CONS.car(head);
+  free(head);
+  return res;
 }
 
 static SValue* eval_all(Env *env, SValue *exprs)

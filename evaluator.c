@@ -4,10 +4,11 @@
 #include "env.h"
 #include "svalue.h"
 
-static SValue* _eval_scheme_func(SValue *func, SValue *args)
+static SValue* _eval_scheme_func(Env *penv, SValue *func, SValue *args)
 {
 reframe:
-  Env *env = func->val.func.f.scheme.env;
+  Env *env = ENV.form();
+  env->parent = penv;
   SValue *params = func->val.func.f.scheme.params;
   SValue *body = func->val.func.f.scheme.body;
 
@@ -40,7 +41,7 @@ tco:
     SValue *car = CONS.car(last);
     SValue *cdr = CONS.cdr(last);
 
-    while (SVALUE.is_special_form(car)) {
+    if (SVALUE.is_special_form(car)) {
       free(last);
       last = SPECIAL_FORMS.apply(car, env, cdr);
       goto tco;
@@ -107,7 +108,7 @@ static SValue* eval(Env *env, SValue *val)
         res = car->val.func.f.builtin(cdr);
         SVALUE.release(&cdr);
       } else {
-        res = _eval_scheme_func(car, cdr);
+        res = _eval_scheme_func(env, car, cdr);
       }
       return res;
     }

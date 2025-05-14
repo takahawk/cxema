@@ -100,7 +100,7 @@ static SValue* builtin_func(SValue* (*eval) (SValue*))
   return value;
 }
 
-static SValue* scheme_func(Env *env, SValue *params, SValue *body)
+static SValue* scheme_func(SValue *params, SValue *body)
 {
   SValue *value = malloc(sizeof(*value));
 
@@ -109,7 +109,6 @@ static SValue* scheme_func(Env *env, SValue *params, SValue *body)
     .is_builtin = false,
     .f = {
       .scheme = {
-        .env = env,
         .params = params,
         .body = body,
       },
@@ -152,15 +151,10 @@ static SValue* _copy_with_parent_env(SValue *val, Env *penv)
       if (val->val.func.is_builtin) {
         return val;
       } else {
-        Env    *env    = ENV.copy(val->val.func.f.scheme.env);
         SValue *params = SVALUE.copy(val->val.func.f.scheme.params);
-        SValue *body   = _copy_with_parent_env(val->val.func.f.scheme.body, env);
+        SValue *body   = _copy_with_parent_env(val->val.func.f.scheme.body, penv);
 
-        if (penv) {
-          env->parent = penv;
-        }
-
-        return SVALUE.scheme_func(env, params, body);
+        return SVALUE.scheme_func(params, body);
       }
     default:
       return SVALUE.errorf("copy is not implemented for type: %s", SVALUE_TYPE.to_string(val->type));
@@ -339,8 +333,6 @@ static void release(SValue **pself)
     if (!self->val.func.is_builtin) {
         SVALUE.release(&self->val.func.f.scheme.body);
         SVALUE.release(&self->val.func.f.scheme.params);
-        Env *env = self->val.func.f.scheme.env;
-        env->release(&env);
     }
     break;
 	}

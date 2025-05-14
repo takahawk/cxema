@@ -121,9 +121,7 @@ static SValue* lambda(Env *env, SValue *args)
   }
 
 
-  Env *func_env = ENV.form();
-  func_env->parent = env;
-  return SVALUE.scheme_func(func_env, params, body);
+  return SVALUE.scheme_func(params, body);
 }
 
 static SValue* cond(Env *env, SValue *args)

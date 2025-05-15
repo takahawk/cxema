@@ -4,10 +4,10 @@
 #include "env.h"
 #include "svalue.h"
 
-static SValue* _eval_scheme_func(Rc* /*Env**/ penv, SValue *func, SValue *args)
+static SValue* _eval_scheme_func(SValue *func, SValue *args)
 {
 reframe:
-  Rc* /*Env**/ env = ENV.form_child(penv);
+  Rc* /*Env**/ env = func->val.func.f.scheme.env;
   SValue *params = func->val.func.f.scheme.params;
   SValue *body = func->val.func.f.scheme.body;
 
@@ -17,6 +17,7 @@ reframe:
   if (expected_len != actual_len) {
     SVALUE.release(&args);
     SVALUE.release(&func);
+    ENV.release(&env);
     return SVALUE.errorf("Wrong number of arguments (expected=%d got=%d)",
                          expected_len,
                          actual_len);
@@ -107,7 +108,7 @@ static SValue* eval(Rc* /*Env**/ env, SValue *val)
         res = car->val.func.f.builtin(cdr);
         SVALUE.release(&cdr);
       } else {
-        res = _eval_scheme_func(env, car, cdr);
+        res = _eval_scheme_func(car, cdr);
       }
       return res;
     }

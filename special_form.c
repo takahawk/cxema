@@ -121,7 +121,7 @@ static SValue* lambda(Rc* /*Env**/ env, SValue *args)
   }
 
 
-  return SVALUE.scheme_func(params, body);
+  return SVALUE.scheme_func(params, body, env);
 }
 
 static SValue* cond(Rc* /*Env**/ env, SValue *args)

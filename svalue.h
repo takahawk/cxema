@@ -35,8 +35,9 @@ typedef struct {
 
     struct {
       // list of symbols
-      SValue *params;
-      SValue *body;
+      SValue     *params;
+      SValue     *body;
+      Rc/*Env**/ *env;
     } scheme;
   } f;
 
@@ -65,7 +66,7 @@ extern const SValue SVAL_VOID;
 struct _SValueStatic {
   SValue* (*symbol)       (const char *symbol);
   SValue* (*builtin_func) (SValue* (*eval) (SValue*));
-  SValue* (*scheme_func)  (SValue *params, SValue *body);
+  SValue* (*scheme_func)  (SValue *params, SValue *body, Rc/*Env**/ *penv);
 	SValue* (*_int)         (int64_t _int);
   SValue* (*_float)       (double _float);
   SValue* (*_bool)        (bool _bool);

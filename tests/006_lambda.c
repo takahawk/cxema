@@ -1,6 +1,8 @@
 #include "cxema.h"
 #include "asserts.h"
 
+#include <stdio.h>
+
 int main() {
 	Cxema *cx = CXEMA.form();
 

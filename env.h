@@ -22,7 +22,8 @@ struct _EnvStatic {
 
   Rc* /*Env**/ (*form)       (void);
   Rc* /*Env**/ (*form_child) (Rc* /*Env**/ rcparent);
-  Rc* /*Env**/ (*copy)       (Rc* /*Env**/ rcoriginal);
+
+  Rc* /*Env**/ (*get_parent) (Rc* /*Env**/ rc_env);
 
   void    (*set)       (Rc* /*Env**/ rcself, char *symbol, SValue *val);
   void    (*setnocopy) (Rc* /*Env**/ rcself, char *symbol, SValue *val);

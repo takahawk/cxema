@@ -82,7 +82,6 @@ static Rc* /*Env**/ form()
   env->symbols = ARRAY.form(sizeof(char*));
   env->symbols->release_cb = RELEASE_CB.form_free_cb(&STD_ALLOCATOR);
   env->values = ARRAY.form(sizeof(SValue*));
-  // TODO: release svalues
   env->values->release_cb = RELEASE_CB.form(&STD_ALLOCATOR, _release_sval);
 
   Rc* rcenv = RC.form(env, RELEASE_CB.form(&STD_ALLOCATOR, _release_env));
@@ -90,34 +89,21 @@ static Rc* /*Env**/ form()
   return rcenv;
 }
 
-static Rc* /*Env**/ form_child(Rc* /*Env**/ rcparent) 
+static Rc* /*Env**/ form_child(Rc* /*Env**/ rc_parent) 
 {
-  Rc *rcenv = ENV.form();
-  Env *env = rcenv->data;
-  env->rcparent = RC.retain(rcparent);
-
-  return rcenv;
-}
-
-static Rc* /*Env**/ copy(Rc*/*Env**/ rc_original)
-{
-  Env* original = rc_original->data;
-  
-  Rc* rc_env = ENV.form();
-  Env* env = rc_env->data;
-
-  Array *symbols = original->symbols;
-  Array *values  = original->values;
-
-  for (int i = 0; i < original->symbols->len; ++i) {
-    char* symbol = *(char **) symbols->get(symbols, i);
-    SValue* value = *(SValue **) values->get(values, i);
-
-    ENV.set(rc_env, symbol, value);
-  }
-  env->rcparent = RC.retain(original->rcparent);
+  Rc *rc_env = ENV.form();
+  Env *env = rc_env->data;
+  env->rcparent = (rc_parent && ENV.get_parent(rc_parent)) 
+    ? RC.retain(rc_parent)
+    : rc_parent; // weak reference for top-level environment
 
   return rc_env;
+}
+
+static Rc* /*Env**/ get_parent(Rc/*Env**/ *rc_env)
+{
+  Env* env = rc_env->data;
+  return env->rcparent;
 }
 
 static void release(Rc*/*Env**/ *pself)
@@ -132,7 +118,8 @@ const struct _EnvStatic ENV = {
 
   .form       = form,
   .form_child = form_child,
-  .copy       = copy,
+
+  .get_parent = get_parent,
 
   .set       = set,
   .setnocopy = setnocopy,

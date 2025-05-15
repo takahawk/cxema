@@ -14,9 +14,9 @@ static void _release_sval(Allocator *a, void **sval)
   *sval = NULL;
 }
 
-static void setnocopy(Env *self, char *symbol, SValue *val)
+static void setnocopy(Rc* /*Env**/ rcself, char *symbol, SValue *val)
 {
-
+  Env *self = rcself->data;
   Array*/*char**/ ss = self->symbols;
   Array*/*SValue**/ vals = self->values;
   size_t i;
@@ -38,14 +38,15 @@ static void setnocopy(Env *self, char *symbol, SValue *val)
   vals->set(vals, i, &val);
 }
 
-static void set(Env *self, char *symbol, SValue *val)
+static void set(Rc* /*Env**/ rcself, char *symbol, SValue *val)
 {
   val = SVALUE.copy(val);
-  setnocopy(self, symbol, val);
+  setnocopy(rcself, symbol, val);
 }
 
-static SValue* get(Env *self, char *symbol)
+static SValue* get(Rc* /*Env**/ rcself, char *symbol)
 {
+  Env *self = rcself->data;
   Array*/*char**/ ss = self->symbols;
   for (int i = 0; i < ss->len; ++i) {
     if (strcmp(symbol, *(char **) ss->get(ss, i)) == 0) {
@@ -54,13 +55,26 @@ static SValue* get(Env *self, char *symbol)
     }
   }
 
-  if (self->parent)
-    return self->parent->get(self->parent, symbol);
-
+  if (self->rcparent) {
+    return ENV.get(self->rcparent, symbol);
+  }
   return SVALUE.errorf("Unknown symbol: \"%s\"", symbol);
 }
 
-static Env* form()
+static void _release_env(Allocator *a, void **env)
+{
+  Env *self = *env;
+
+  self->symbols->release(&self->symbols);
+  self->values->release(&self->values);
+  if (self->rcparent) {
+    ENV.release(&self->rcparent);
+  }
+  free(self);
+  *env = NULL;
+}
+
+static Rc* /*Env**/ form()
 {
   Env* env = malloc(sizeof(Env));
 
@@ -71,13 +85,26 @@ static Env* form()
   // TODO: release svalues
   env->values->release_cb = RELEASE_CB.form(&STD_ALLOCATOR, _release_sval);
 
-  return env;
+  Rc* rcenv = RC.form(env, RELEASE_CB.form(&STD_ALLOCATOR, _release_env));
+
+  return rcenv;
 }
 
-static Env* copy(Env *original)
+static Rc* /*Env**/ form_child(Rc* /*Env**/ rcparent) 
 {
+  Rc *rcenv = ENV.form();
+  Env *env = rcenv->data;
+  env->rcparent = RC.retain(rcparent);
 
-  Env* env = form();
+  return rcenv;
+}
+
+static Rc* /*Env**/ copy(Rc*/*Env**/ rc_original)
+{
+  Env* original = rc_original->data;
+  
+  Rc* rc_env = ENV.form();
+  Env* env = rc_env->data;
 
   Array *symbols = original->symbols;
   Array *values  = original->values;
@@ -86,33 +113,29 @@ static Env* copy(Env *original)
     char* symbol = *(char **) symbols->get(symbols, i);
     SValue* value = *(SValue **) values->get(values, i);
 
-    set(env, symbol, value);
+    ENV.set(rc_env, symbol, value);
   }
-  env->parent = original->parent;
+  env->rcparent = RC.retain(original->rcparent);
 
-  return env;
+  return rc_env;
 }
 
-static void release(Env **pself)
+static void release(Rc*/*Env**/ *pself)
 {
-  Env *self = *pself;
-
-  self->symbols->release(&self->symbols);
-  self->values->release(&self->values);
-  free(self);
-  *pself = self;
+  RC.release(pself);
 }
 
 const struct _EnvStatic ENV = {
   .prototype = {
-    .parent  = NULL,
-
-    .set       = set,
-    .setnocopy = setnocopy,
-    .get       = get,
-    .release   = release,
+    .rcparent  = NULL,
   },
 
-  .form = form,
-  .copy = copy,
+  .form       = form,
+  .form_child = form_child,
+  .copy       = copy,
+
+  .set       = set,
+  .setnocopy = setnocopy,
+  .get       = get,
+  .release   = release,
 };

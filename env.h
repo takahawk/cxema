@@ -2,29 +2,33 @@
 #define CXEMA_ENV_H_
 #include "codex/ds/array.h"
 
+#include "codex/mem/rc.h"
+
 struct SValue;
 typedef struct SValue SValue;
 
 typedef struct Env Env;
 
 struct Env {
-  Env *parent;
+  Rc* /*Env**/       rcparent;
   // TODO: optimize? radix tree, hashtable, balanced btree whatever
-  Array*/*char**/ symbols;
-  Array*/*SValue**/ values;
+  Array* /*char**/   symbols;
+  Array* /*SValue**/ values;
 
-  void    (*set)       (Env *self, char *symbol, SValue *val);
-  void    (*setnocopy) (Env *self, char *symbol, SValue *val);
-  SValue* (*get)       (Env *self, char *symbol);
-
-  void    (*release) (Env **pself);
 };
 
 struct _EnvStatic {
   Env  prototype;
 
-  Env* (*form) (void);
-  Env* (*copy) (Env *original);
+  Rc* /*Env**/ (*form)       (void);
+  Rc* /*Env**/ (*form_child) (Rc* /*Env**/ rcparent);
+  Rc* /*Env**/ (*copy)       (Rc* /*Env**/ rcoriginal);
+
+  void    (*set)       (Rc* /*Env**/ rcself, char *symbol, SValue *val);
+  void    (*setnocopy) (Rc* /*Env**/ rcself, char *symbol, SValue *val);
+  SValue* (*get)       (Rc* /*Env**/ rcself, char *symbol);
+
+  void    (*release)   (Rc* /*Env**/ *pself);
 };
 
 extern const struct _EnvStatic ENV;

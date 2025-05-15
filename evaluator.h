@@ -1,10 +1,11 @@
 #ifndef CXEMA_EVALUATOR_H_
 #define CXEMA_EVALUATOR_H_
+#include "codex/mem/rc.h"
 
 typedef struct Env Env;
 typedef struct SValue SValue;
 
-typedef SValue* (*Evaluator) (Env *env, SValue *val); 
+typedef SValue* (*Evaluator) (Rc* /*Env**/ env, SValue *val); 
 
 // evaluate single clause, if cons it is evaluated as function
 extern const Evaluator EVAL;

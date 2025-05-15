@@ -1,12 +1,14 @@
 #ifndef CXEMA_H_
 #define CXEMA_H_
+#include "codex/mem/rc.h"
+
 typedef struct SValue SValue;
 typedef struct Env Env;
 
 typedef struct Cxema Cxema;
 
 struct Cxema {
-  Env *genv;
+  Rc* /*Env**/ genv;
 
 	SValue* (*parse)         (Cxema *self, char *code);
 	SValue* (*eval)          (Cxema *self, SValue *svalue);

@@ -35,7 +35,7 @@ static SValue* from_string(const char *symbol)
   return SVALUE.errorf("unrecognized special form: \"%s\"", symbol);
 }
 
-static SValue* apply(SValue *sform, Env *env, SValue *args) {
+static SValue* apply(SValue *sform, Rc* /*Env**/ env, SValue *args) {
   SpecialForm form = sform->val.special_form;
   SVALUE.release(&sform);
   switch (form) {
@@ -56,7 +56,7 @@ static SValue* apply(SValue *sform, Env *env, SValue *args) {
   return SVALUE.errorf("unrecognized special form");
 }
 
-static SValue* define(Env *env, SValue *args)
+static SValue* define(Rc* /*Env**/ env, SValue *args)
 {
   if (!args || !args->val.cons.cdr || args->val.cons.cdr->val.cons.cdr) {
     return SVALUE.errorf("exactly two arguments are expected (define)");
@@ -71,7 +71,7 @@ static SValue* define(Env *env, SValue *args)
     if (SVAL_TYPE_ERR == sval->type) {
       return sval;
     }
-    env->setnocopy(env, head->val.symbol, sval);
+    ENV.setnocopy(env, head->val.symbol, sval);
     SVALUE.release(&head);
     CONS.list.release_envelope(&args);
     return &SVAL_VOID;
@@ -89,7 +89,7 @@ static SValue* define(Env *env, SValue *args)
     if (SVAL_TYPE_ERR == func->type) {
       return func;
     }
-    env->setnocopy(env, name->val.symbol, func);
+    ENV.setnocopy(env, name->val.symbol, func);
     SVALUE.release(&name);
     free(head);
     return &SVAL_VOID;
@@ -98,7 +98,7 @@ static SValue* define(Env *env, SValue *args)
   }
 }
 
-static SValue* lambda(Env *env, SValue *args)
+static SValue* lambda(Rc* /*Env**/ env, SValue *args)
 {
   if (!CONS.is_list(args) || CONS.list.len(args) < 2) {
     return SVALUE.errorf("expected list at least 2 arguments (lambda) (got %d)",
@@ -124,7 +124,7 @@ static SValue* lambda(Env *env, SValue *args)
   return SVALUE.scheme_func(params, body);
 }
 
-static SValue* cond(Env *env, SValue *args)
+static SValue* cond(Rc* /*Env**/ env, SValue *args)
 {
   if (!args) {
     return SVALUE.errorf("at least one condition/expression pair is expected (cond)");
@@ -178,7 +178,7 @@ end:
   return res;
 }
 
-static SValue* _if(Env *env, SValue *args)
+static SValue* _if(Rc* /*Env**/ env, SValue *args)
 {
   int arglen = CONS.list.len(args);
   if (arglen < 2) {
@@ -216,7 +216,7 @@ static SValue* _if(Env *env, SValue *args)
   return res;
 }
 
-static SValue* and(Env *env, SValue *args)
+static SValue* and(Rc* /*Env**/ env, SValue *args)
 {
   if (!args)
     return SVALUE._bool(true);
@@ -243,7 +243,7 @@ end:
   return res;
 }
 
-static SValue* or(Env *env, SValue *args)
+static SValue* or(Rc* /*Env**/ env, SValue *args)
 {
   if (!args)
     return SVALUE._bool(false);

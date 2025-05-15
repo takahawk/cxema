@@ -323,22 +323,22 @@ static SValue *_eval_newline(SValue *args)
   return &SVAL_VOID;
 }
 
-static void define_all(Env *env)
+static void define_all(Rc* /*Env**/ env)
 {
-  env->setnocopy(env, "+", SVALUE.builtin_func(_eval_sum));
-  env->setnocopy(env, "-", SVALUE.builtin_func(_eval_sub));
-  env->setnocopy(env, "*", SVALUE.builtin_func(_eval_mul));
-  env->setnocopy(env, "/", SVALUE.builtin_func(_eval_div));
+  ENV.setnocopy(env, "+", SVALUE.builtin_func(_eval_sum));
+  ENV.setnocopy(env, "-", SVALUE.builtin_func(_eval_sub));
+  ENV.setnocopy(env, "*", SVALUE.builtin_func(_eval_mul));
+  ENV.setnocopy(env, "/", SVALUE.builtin_func(_eval_div));
 
-  env->setnocopy(env, "=", SVALUE.builtin_func(_eval_eq));
-  env->setnocopy(env, ">", SVALUE.builtin_func(_eval_gt));
-  env->setnocopy(env, "<", SVALUE.builtin_func(_eval_lt));
-  env->setnocopy(env, ">=", SVALUE.builtin_func(_eval_ge));
-  env->setnocopy(env, "<=", SVALUE.builtin_func(_eval_le));
-  env->setnocopy(env, "not", SVALUE.builtin_func(_eval_not));
+  ENV.setnocopy(env, "=", SVALUE.builtin_func(_eval_eq));
+  ENV.setnocopy(env, ">", SVALUE.builtin_func(_eval_gt));
+  ENV.setnocopy(env, "<", SVALUE.builtin_func(_eval_lt));
+  ENV.setnocopy(env, ">=", SVALUE.builtin_func(_eval_ge));
+  ENV.setnocopy(env, "<=", SVALUE.builtin_func(_eval_le));
+  ENV.setnocopy(env, "not", SVALUE.builtin_func(_eval_not));
 
-  env->setnocopy(env, "display", SVALUE.builtin_func(_eval_display));
-  env->setnocopy(env, "newline", SVALUE.builtin_func(_eval_newline));
+  ENV.setnocopy(env, "display", SVALUE.builtin_func(_eval_display));
+  ENV.setnocopy(env, "newline", SVALUE.builtin_func(_eval_newline));
 }
 
 const struct _BuiltinsStatic BUILTIN = {

@@ -4,11 +4,10 @@
 #include "env.h"
 #include "svalue.h"
 
-static SValue* _eval_scheme_func(Env *penv, SValue *func, SValue *args)
+static SValue* _eval_scheme_func(Rc* /*Env**/ penv, SValue *func, SValue *args)
 {
 reframe:
-  Env *env = ENV.form();
-  env->parent = penv;
+  Rc* /*Env**/ env = ENV.form_child(penv);
   SValue *params = func->val.func.f.scheme.params;
   SValue *body = func->val.func.f.scheme.body;
 
@@ -28,7 +27,7 @@ reframe:
   for (;
        param && arg;
        param = CONS.cdr(param), arg = CONS.cdr(arg)) {
-    env->setnocopy(env, CONS.car(param)->val.symbol, CONS.car(arg));
+    ENV.setnocopy(env, CONS.car(param)->val.symbol, CONS.car(arg));
   }
 
   CONS.list.release_envelope(&args);
@@ -55,7 +54,7 @@ tco:
 
       free(last);
       free(func);
-      env->release(&env);
+      ENV.release(&env);
 
       func = car;
       args = cdr;
@@ -64,17 +63,17 @@ tco:
   }
 
   SValue *res = EVAL(env, last);
-  env->release(&env);
+  ENV.release(&env);
   free(func);
 
   return res;
 }
 
-static SValue* eval(Env *env, SValue *val)
+static SValue* eval(Rc* /*Env**/ env, SValue *val)
 {
   if (val->type == SVAL_TYPE_SYMBOL) {
     char *symbol = val->val.symbol;
-    SValue* res = env->get(env, symbol);
+    SValue* res = ENV.get(env, symbol);
     if (!res) {
       res = SVALUE.errorf("Undefined symbol \"%s\"", symbol);
     }
@@ -117,7 +116,7 @@ static SValue* eval(Env *env, SValue *val)
   return val;
 }
 
-static SValue* eval_all_but_one(Env *env, SValue *exprs)
+static SValue* eval_all_but_one(Rc* /*Env**/ env, SValue *exprs)
 {
   if (!CONS.is_list(exprs) || !exprs) {
     return SVALUE.errorf("non-empty list expected. found \"%s\"", SVALUE.to_string(exprs));
@@ -129,20 +128,24 @@ static SValue* eval_all_but_one(Env *env, SValue *exprs)
     SValue *car = CONS.car(head);
     SValue *cdr = CONS.cdr(head);
     free(head);
+    head = cdr;
+
     SValue *res = EVAL(env, car);
     if (SVALUE.is_err(res)) {
       SVALUE.release(&head);
       return res;
     }
-    head = cdr;
+
+    SVALUE.release(&res);
   }
+
 
   SValue *res = CONS.car(head);
   free(head);
   return res;
 }
 
-static SValue* eval_all(Env *env, SValue *exprs)
+static SValue* eval_all(Rc* /*Env**/ env, SValue *exprs)
 {
   return EVAL(env, eval_all_but_one(env, exprs));
 }

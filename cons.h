@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "codex/ds/array.h"
+#include "codex/mem/rc.h"
 
 #include "svalue.h"
 
@@ -22,7 +23,7 @@ struct _ConsStatic {
     size_t  (*len)              (SValue *sval);
     bool    (*is_all)           (SValue *sval, bool (*cb) (SValue *val));
     SValue* (*reverse)          (SValue *list);
-    void    (*eval_items)       (SValue *list, Env *env);
+    void    (*eval_items)       (SValue *list, Rc* /*Env**/ env);
     void    (*println_items)    (SValue *list);
     // Array of SValues ofc
     Array*  (*to_array)         (SValue *list);

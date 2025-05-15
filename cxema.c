@@ -41,7 +41,9 @@ static SValue* interpret_file(Cxema *self, char *filename)
   char *buf = FILES.read_to_str(filename);
   if (!buf)
     return SVALUE.errorf("failed to read file: %s", filename);
-  return self->interpret(self, buf);
+  SValue *res = self->interpret(self, buf);
+  free(buf);
+  return res;
 }
 
 static SValue* interpret_file_all(Cxema *self, char *filename)
@@ -49,13 +51,15 @@ static SValue* interpret_file_all(Cxema *self, char *filename)
   char *buf = FILES.read_to_str(filename);
   if (!buf)
     return SVALUE.errorf("failed to read file: %s", filename);
-  return self->interpret_all(self, buf);
+  SValue *res = self->interpret_all(self, buf);
+  free(buf);
+  return res;
 }
 
 static void release(Cxema **pself)
 {
   Cxema *self = *pself;
-  self->genv->release(&self->genv);
+  ENV.release(&self->genv);
 	free(*pself);
 	*pself = NULL;
 }

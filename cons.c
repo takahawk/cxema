@@ -76,7 +76,7 @@ static SValue* list_reverse(SValue *list)
   return reversed;
 }
 
-static void list_eval_items(SValue *list, Env *env)
+static void list_eval_items(SValue *list, Rc* /*Env**/ env)
 {
   while (list) {
     list->val.cons.car = EVAL(env, CONS.car(list));
